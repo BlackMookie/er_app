@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#211d3d">
+  <title>Ethereal Realms · Chronique de personnage</title>
+  <style>
+:root {
+  color-scheme: light;
+  --paper: #f5f1e9;
+  --card: #fffcf6;
+  --ink: #302c42;
+  --soft: #787183;
+  --line: #e5ddd0;
+  --accent: #6545a0;
+  --gold: #b58b42;
+  --green: #23776b;
+  --shadow: 0 5px 22px #37284b08;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.6 'Segoe UI', system-ui, sans-serif; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; border: 1px solid var(--line); background: #fffdf8; color: var(--ink); border-radius: 8px; padding: .5rem .8rem; transition: background .18s, border-color .18s, transform .18s; }
+button:hover { background: #f0e9f6; border-color: #c0a6d9; }
+button:disabled { cursor: default; opacity: .45; }
+button:focus-visible, a:focus-visible { outline: 3px solid #ab84dd; outline-offset: 4px; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; font-weight: normal; }
+small, .muted { color: var(--soft); }
+small { font-size: .77rem; }
+svg { display: block; }
+.primary { background: var(--accent); border-color: var(--accent); color: #fff8f1; font-weight: 600; box-shadow: 0 4px 10px #6545a021; }
+.primary:hover { background: #503480; border-color: #503480; }
+.quiet { background: transparent; border-color: transparent; color: var(--soft); }
+.quiet:hover { background: #e8deef; border-color: transparent; }
+.icon-button { border: 0; background: transparent; font-size: 1.5rem; line-height: 1; padding: .25rem .5rem; }
+.icon-button svg { width: 15px; height: 15px; }
+.right { display: flex; align-items: center; gap: 12px; }
+.eyebrow { font: 600 .65rem/1.5 'Segoe UI', sans-serif; letter-spacing: .16em; color: var(--gold); text-transform: uppercase; }
+
+/* The sidebar stays compact while the character sheet gets the available width. */
+.sidebar {
+  position: fixed; inset: 0 auto 0 0; width: 230px; padding: 32px 23px;
+  background: radial-gradient(ellipse at 20% 95%, #443055 0, transparent 60%), #231f3a;
+  color: #e8ddee; display: flex; flex-direction: column; z-index: 5;
+  border-right: 1px solid #ab8fbe28;
+}
+.brand { display: flex; align-items: center; gap: 13px; text-decoration: none; color: #e9d7a9; }
+.brand svg { width: 42px; fill: none; stroke: currentColor; stroke-width: 1.2; flex-shrink: 0; }
+.brand span { font: 25px/1 Georgia, serif; letter-spacing: .04em; }
+.brand em { font-size: 23px; font-weight: normal; }
+.sidebar-caption { font: italic 12px Georgia, serif; color: #a69ab3; margin: 22px 0 37px; }
+.nav-label { display: block; color: #8e829f; letter-spacing: .15em; font-size: 9px; margin: 25px 12px 10px; }
+.sidebar nav button { display: flex; align-items: center; gap: 13px; width: 100%; text-align: left; color: #bfb4ce; border: 1px solid transparent; background: transparent; margin-bottom: 6px; padding: 12px; border-radius: 9px; font-size: 13px; }
+.sidebar nav button > span:first-child { font-size: 25px; min-width: 24px; color: #c2a1cf; }
+.sidebar nav button small { display: block; font-size: 10px; color: #a295b1; margin-top: 3px; }
+.sidebar nav button[aria-pressed=true] { background: #ffffff0b; border-color: #d4b57a42; color: #f0dfbb; box-shadow: inset 3px 0 #d4b57a; }
+.sidebar nav button:hover { background: #ffffff0b; }
+.sidebar-bottom { margin-top: auto; padding: 35px 10px 0; color: #b3a5bf; font: italic 14px/1.7 Georgia, serif; }
+.sidebar-bottom > span { font-size: 30px; color: #b69466; }
+.sidebar-bottom small { display: block; font: 8px/1.5 'Segoe UI', sans-serif; letter-spacing: .12em; margin-top: 22px; color: #94859f; }
+.nav-count { margin-left: auto; font-size: 11px; background: #b99051; color: #211b32; border-radius: 30px; padding: 0 6px; }
+.app-shell { margin-left: 230px; }
+.topbar { min-height: 72px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 12px 36px; background: #fffcf780; gap: 15px; }
+.breadcrumb { font-size: 12px; color: var(--soft); }
+.breadcrumb span { margin: 0 10px; color: #bdb4c1; }
+.breadcrumb strong { font-weight: 500; color: var(--ink); }
+.badge { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; border: 1px solid #a2bfb252; padding: 4px 9px; border-radius: 30px; color: var(--green); background: #ecf3ec; }
+.connection:before { content: ''; width: 6px; height: 6px; background: currentColor; border-radius: 50%; }
+.connection[data-offline=true] { color: #9c702e; border-color: #b88a4550; background: #f7edd8; }
+main { width: min(1320px, 100%); margin: auto; padding: 28px 36px 12px; }
+
+.hero { position: relative; isolation: isolate; display: flex; align-items: center; gap: 24px; min-height: 252px; padding: 32px; border-radius: 12px; overflow: hidden; background: #3e365a; color: #fff4df; border: 1px solid #e4c79966; box-shadow: var(--shadow); }
+.realm-landscape, .hero-shade { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.hero-shade { background: linear-gradient(90deg, #252138fa 0, #302641dc 30%, #30264155 70%, #30264100 100%); }
+.character-sigil { position: relative; width: 109px; height: 125px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #e3cc9f; font: 40px/1 Georgia, serif; border: 1px solid #c7a66b80; border-radius: 48% 48% 38% 38%; background: radial-gradient(ellipse, #9d80a13b, #31283fa1); box-shadow: 0 0 0 7px #b9a06814, 0 0 0 8px #b9a06830; }
+.character-sigil:after { content: ''; position: absolute; inset: 9px; border: 1px solid #cfb7793d; border-radius: inherit; }
+.character-sigil small { position: absolute; bottom: 12px; font-size: 15px; color: #ceae72; }
+.hero-content { min-width: 0; position: relative; }
+.hero-content h1 { font-size: clamp(28px, 3.2vw, 46px); line-height: 1.15; margin: 9px 0 12px; overflow-wrap: anywhere; }
+.hero-content > p:last-of-type { font-size: 12px; color: #d6c8d7; max-width: 470px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.hero .eyebrow { color: #d6b77e; }
+.hero-footer { display: flex; align-items: center; gap: 12px; margin-top: 20px; font-size: 10px; color: #c6b7cc; flex-wrap: wrap; }
+.hero-tag { padding: 3px 9px; border: 1px solid #e3c7974a; border-radius: 4px; color: #e0c89d; background: #30203955; }
+.character-picker { position: absolute; right: 20px; top: 20px; color: #eee1ec; font-size: 10px; max-width: 210px; }
+.character-picker select { background: #272034e8; color: #fff2dd; border-color: #cbbb9d55; padding: 6px 8px; }
+.sheet-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 22px; margin-top: 24px; align-items: start; }
+.character-aside { position: sticky; top: 22px; }
+.sheet-content, .view-panel { min-width: 0; }
+.view-panel { display: grid; gap: 22px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 11px; padding: 23px; box-shadow: var(--shadow); min-width: 0; }
+.section-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+.section-heading h2 { font-size: 24px; line-height: 1.2; margin-top: 3px; }
+.section-icon { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 9px; font: 25px/1 Georgia, serif; border: 1px solid currentColor; }
+.section-icon.violet { color: #8b64b4; background: #f1eaf5; border-color: #e5d5ee; }
+.section-icon.gold { color: #b58b42; background: #f7efdb; border-color: #ecdfbf; }
+.section-icon.teal { color: #43847d; background: #e9f2ec; border-color: #cce4d8; }
+.section-icon.rose { color: #b96582; background: #f7e9eb; border-color: #eed4de; }
+.heading-note { margin-left: auto; font-size: 10px; text-align: right; max-width: 120px; }
+.identity-field { display: flex; flex-direction: column; position: relative; padding: 17px 26px 17px 0; border-top: 1px solid var(--line); gap: 5px; }
+.identity-field > small { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: #8d7995; }
+.identity-field > strong { font-weight: 500; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.identity-field > button { position: absolute; right: -8px; top: 22px; color: #9c85ae; }
+.aside-note { display: flex; gap: 14px; padding: 26px 15px; color: #aaa084; }
+.aside-note > span { font-size: 23px; }
+.aside-note p { font: italic 13px/1.8 Georgia, serif; color: #8d8070; }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.stat { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; padding: 16px 8px 12px; min-width: 0; border: 1px solid var(--stat-line); border-radius: 9px; background: linear-gradient(160deg, var(--stat-tint), #fffcf8 80%); color: var(--ink); }
+.stat:hover { background: var(--stat-tint); border-color: var(--stat-color); transform: translateY(-2px); }
+.stat-symbol { color: var(--stat-color); width: 24px; height: 24px; margin-bottom: 5px; }
+.stat-symbol svg { width: 24px; height: 24px; }
+.stat-label { font-size: 9px; color: var(--stat-color); font-weight: 700; letter-spacing: .12em; }
+.stat-number { font: 34px/1.2 Georgia, serif; color: var(--stat-color); }
+.stat-name { font-size: 10px; color: #7e7587; }
+.stat-bonus { font-size: 9px; margin-top: 6px; color: #89738e; min-height: 15px; }
+.edit-hint { position: absolute; top: 7px; right: 7px; font-size: 13px; color: var(--stat-color); }
+.stat.readonly:hover { transform: none; }
+.skills-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.skill { border: 1px solid #e8e1d9; border-radius: 8px; position: relative; padding: 13px 38px 12px 13px; background: #fffdf8; min-width: 0; }
+.skill-title { display: flex; align-items: start; gap: 8px; }
+.skill-title > span { font-size: 17px; color: #a584bc; }
+.skill-title strong { font-weight: 600; font-size: 12px; }
+.skill > small { display: block; margin: 5px 0 7px; font-size: 10px; }
+.skill .icon-button { position: absolute; right: 6px; top: 12px; color: #a18ab0; }
+.rank-marks { display: flex; align-items: center; gap: 4px; }
+.rank-marks span { width: 5px; height: 5px; background: #e9e0ed; transform: rotate(45deg); }
+.rank-marks span.filled { background: #9a77b1; }
+.rank-marks small { font-size: 9px; letter-spacing: .04em; margin-left: 5px; color: #89738e; }
+.line { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.line > div { min-width: 0; overflow-wrap: anywhere; }
+.line small { font-size: 10px; }
+.weapon-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+.weapon { padding: 20px; border-radius: 10px; border: 1px solid var(--line); background: #faf6ef; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.weapon.active { border-color: #a68ac0; background: linear-gradient(150deg, #f4ebf9, #fffcf8); }
+.weapon-emblem { display: flex; align-items: center; justify-content: center; height: 88px; width: 88px; border: 1px solid #dec9e6; border-radius: 50%; background: radial-gradient(circle, #e4d6ed, transparent 70%); color: #846399; }
+.weapon-emblem svg { width: 40px; height: 40px; }
+.weapon h3 { font-size: 24px; }
+.weapon small { font-size: 10px; }
+.inventory-icon { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border: 1px solid #e8d7ba; border-radius: 7px; background: #f6eedf; color: #b38b46; font-size: 22px; }
+.inventory-name { display: flex; align-items: center; gap: 12px; }
+.inventory-quantity { font: 22px/1 Georgia, serif; color: #b08a54; }
+.empty-state { text-align: center; padding: 25px 10px; border: 1px dashed #dfd4e4; border-radius: 8px; font: italic 15px/1.8 Georgia, serif; color: #89738e; }
+.empty-state:before { content: '✧'; display: block; font: 28px Georgia, serif; color: #c5accd; margin-bottom: 8px; }
+.dice-card { border-top: 3px solid #a28ab7; }
+
+label { display: grid; gap: 7px; font-size: 11px; color: #85748f; min-width: 0; }
+input, select, textarea { display: block; width: 100%; min-width: 0; max-width: 100%; background: #fffcf7; color: var(--ink); border: 1px solid #dfd4e5; border-radius: 7px; padding: 10px 12px; font-size: 13px; transition: border .15s, box-shadow .15s; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: #9b75ba; box-shadow: 0 0 0 3px #9b75ba19; }
+textarea { resize: vertical; min-height: 125px; }
+input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
+form { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; margin: 10px 0; }
+form label { flex: 1 1 130px; }
+label.check { display: flex; align-items: center; gap: 8px; flex-basis: 100%; font-size: 11px; }
+#roll-form > label:first-child { flex-basis: 100%; }
+#roll-form > .primary { margin-left: auto; }
+#roll-preview { margin-top: 15px; padding: 13px; border: 1px dashed #d9c9e3; border-radius: 8px; background: #f7f0fa; font-size: 11px; color: #806191; }
+#journal { max-height: 390px; overflow: auto; }
+.ok { color: #327e6c; }
+.failed, .error { color: #ae4b68; }
+.notice { padding: 12px 16px; border: 1px solid #e2cca2; border-radius: 8px; background: #fff4de; font-size: 12px; margin: 16px 0; }
+.notice.error { background: #fff0ee; border-color: #edc8c9; }
+#conflicts > .card { margin: 14px 0; background: #fff8e9; border-color: #dec18d; }
+#conflicts p { margin: 8px 0; font-size: 13px; }
+.page-footer { padding: 25px 36px; font-size: 8px; letter-spacing: .17em; color: #978981; text-align: center; }
+.page-footer span { color: #c3ab7f; margin: 0 12px; }
+.login-scene { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 440px); align-items: center; gap: 40px; min-height: calc(100vh - 190px); padding: 40px 20px; }
+.welcome h1 { font-size: clamp(35px, 4.2vw, 58px); line-height: 1.12; margin: 18px 0; color: #51405f; }
+.welcome h1 em { color: #9069a2; }
+.welcome > p:last-of-type { max-width: 330px; color: #8b7d8d; font-size: 13px; }
+.welcome-seal { font: 180px/1 Georgia, serif; color: #cbb5d452; text-align: center; transform: rotate(12deg); margin-top: 25px; }
+.login-card { padding: 32px; border-top: 3px solid #b89a66; }
+.login-card h2 { font-size: 29px; margin-top: 8px; }
+.auth-tabs { display: flex; border-bottom: 1px solid var(--line); margin: 22px 0; }
+.auth-tabs button { flex: 1; border: 0; border-radius: 0; background: transparent; font-size: 12px; color: #8c7595; padding: 11px 0; }
+.auth-tabs button[aria-pressed=true] { color: #6c468e; border-bottom: 2px solid #8b67a5; }
+.login-card form { display: grid; gap: 18px; }
+.login-card form > button { margin-top: 6px; padding: 12px; }
+.login-card label { font-size: 12px; }
+
+/* The editor is a native accessible dialog with custom controls. */
+dialog { border: 1px solid #d5bedf; border-radius: 15px; box-shadow: 0 25px 100px #21112a66; padding: 0; width: min(480px, calc(100% - 28px)); max-height: calc(100dvh - 40px); overflow: auto; background: var(--card); color: var(--ink); }
+dialog::backdrop { background: #211a39a3; backdrop-filter: blur(5px); }
+#edit-form { display: block; margin: 0; padding: 27px; }
+#edit-form h2 { font-size: 30px; line-height: 1.15; margin: 7px 0 12px; }
+#edit-form > p.muted { font-size: 12px; line-height: 1.7; }
+.editor-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 18px; }
+.editor-top .section-icon { height: 44px; width: 44px; font-size: 28px; }
+.editor-top button { color: #a08bab; }
+#editor-control { margin: 24px 0 18px; }
+#editor-control > label { margin-bottom: 7px; }
+.number-control { display: flex; align-items: center; justify-content: center; gap: 18px; }
+.number-control input { width: 120px; text-align: center; font: 44px/1.2 Georgia, serif; color: #785794; border: 0; background: #f3ebf7; padding: 14px 6px; appearance: textfield; }
+.number-control input::-webkit-inner-spin-button { appearance: none; }
+.number-control button { border-radius: 50%; height: 42px; width: 42px; padding: 0; font-size: 25px; color: #a184b2; background: #f5eff7; border-color: #dfd0e6; }
+.step-shortcuts { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
+.step-shortcuts button { font-size: 11px; background: transparent; color: #8c739b; }
+.rank-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.rank-picker button { display: flex; flex-direction: column; align-items: center; font: 24px Georgia, serif; padding: 12px 6px; border-color: #e5d7eb; }
+.rank-picker button small { font: 8px 'Segoe UI', sans-serif; letter-spacing: .1em; margin-top: 8px; color: #89738e; }
+.rank-picker button[aria-pressed=true] { background: #6f4d91; border-color: #6f4d91; color: #fff5dd; box-shadow: 0 3px 12px #6f4d9125; }
+.rank-picker button[aria-pressed=true] small { color: #e9d6f1; }
+.editor-preview { padding: 16px; border: 1px solid #e7dceb; background: linear-gradient(110deg, #f7f0fa, #fcf9ef); border-radius: 9px; font-size: 12px; color: #8d7699; }
+.editor-preview strong { color: #6a4c83; }
+.editor-actions { display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--line); padding-top: 20px; margin-top: 24px; }
+.editor-actions button { min-width: 95px; }
+.preview-total { display: flex; align-items: center; gap: 15px; font-size: 24px; margin-bottom: 7px; font-family: Georgia, serif; }
+.preview-total span { color: #b9a4c3; }
+.preview-total strong { color: #80569e; }
+#editor-error { margin-top: 15px; font-size: 12px; }
+#toast { position: fixed; bottom: 24px; left: calc(50% + 115px); transform: translateX(-50%); z-index: 20; border: 1px solid #c5b1d2; border-radius: 10px; background: #33263e; color: #f6e7db; padding: 12px 20px; box-shadow: 0 5px 30px #21112a33; font-size: 12px; max-width: calc(100% - 32px); text-align: center; }
+
+@media (min-width: 1550px) {
+  main { padding-top: 35px; }
+  .hero { min-height: 280px; }
+  .stats { gap: 14px; }
+  .stat { padding-top: 20px; padding-bottom: 16px; }
+  .stat-number { font-size: 40px; }
+}
+@media (max-width: 1150px) {
+  .sidebar { width: 195px; padding: 28px 15px; }
+  .app-shell { margin-left: 195px; }
+  .sheet-layout { grid-template-columns: 205px minmax(0, 1fr); gap: 16px; }
+  main { padding: 24px; }
+  .topbar { padding: 12px 24px; }
+  .card { padding: 18px; }
+  .section-heading { gap: 10px; }
+  .section-heading h2 { font-size: 22px; }
+  .heading-note { display: none; }
+  .character-sigil { width: 85px; height: 105px; font-size: 32px; }
+  .hero { gap: 21px; }
+  .stats { gap: 7px; }
+  .stat-bonus { font-size: 8px; }
+  .skill { padding-left: 10px; }
+  .skills-grid { gap: 8px; }
+  #toast { left: calc(50% + 97px); }
+}
+@media (max-width: 930px) {
+  .sidebar { width: 74px; padding: 25px 10px; }
+  .brand { justify-content: center; }
+  .brand svg { width: 38px; }
+  .brand > span, .sidebar-caption, .nav-label, .sidebar nav button > span:not(:first-child), .sidebar-bottom { display: none; }
+  .sidebar nav { margin-top: 35px; }
+  .sidebar nav button { justify-content: center; padding: 10px 7px; }
+  .sidebar nav button > span:first-child { min-width: 0; }
+  .app-shell { margin-left: 74px; }
+  .sheet-layout { grid-template-columns: 185px minmax(0, 1fr); }
+  .hero-content h1 { font-size: 32px; }
+  .character-picker { max-width: 145px; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .login-scene { gap: 20px; padding: 10px 0; }
+  .welcome h1 { font-size: 37px; }
+  .welcome-seal { font-size: 120px; }
+  .login-card { padding: 25px; }
+  #toast { left: calc(50% + 37px); }
+}
+@media (max-width: 660px) {
+  .sidebar { position: relative; width: auto; inset: auto; padding: 15px 18px; flex-direction: row; align-items: center; justify-content: space-between; }
+  .brand { gap: 9px; }
+  .brand svg { width: 30px; }
+  .brand > span { display: block; font-size: 17px; line-height: .95; }
+  .brand em { font-size: 16px; }
+  .sidebar nav { display: flex; gap: 5px; margin: 0; }
+  .sidebar nav button { margin: 0; padding: 5px 10px; width: auto; }
+  .sidebar nav button > span:first-child { font-size: 22px; }
+  .app-shell { margin: 0; }
+  .topbar { min-height: 54px; padding: 10px 17px; flex-wrap: wrap; gap: 8px; }
+  .breadcrumb { font-size: 10px; }
+  .breadcrumb span { margin: 0 5px; }
+  .topbar .quiet { font-size: 11px; padding: 3px; }
+  .badge { font-size: 9px; }
+  main { padding: 17px; }
+  .hero { padding: 25px 20px; min-height: 225px; gap: 17px; }
+  .hero-content h1 { font-size: 29px; }
+  .character-sigil { width: 65px; height: 83px; font-size: 25px; }
+  .hero-content > p:last-of-type { font-size: 11px; }
+  .hero-footer { margin-top: 14px; gap: 7px; font-size: 9px; }
+  .hero-tag { font-size: 9px; }
+  .character-picker { position: relative; inset: auto; flex-basis: 100%; max-width: none; width: 100%; }
+  .hero:has(.character-picker:not([hidden])) { flex-wrap: wrap; }
+  .sheet-layout { display: flex; flex-direction: column; margin-top: 17px; gap: 17px; }
+  .character-aside, .sheet-content { width: 100%; position: static; }
+  .character-aside .card { padding-bottom: 10px; }
+  #identity { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .identity-field { padding-top: 10px; }
+  .identity-field > button { top: 13px; }
+  .aside-note { display: none; }
+  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .stat-number { font-size: 28px; }
+  .stat-name { font-size: 9px; }
+  .stat-bonus { font-size: 8px; }
+  .stat { padding: 12px 5px; }
+  .section-heading h2 { font-size: 24px; }
+  .section-heading { margin-bottom: 17px; }
+  .view-panel { gap: 17px; }
+  .skills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .skill-title strong { font-size: 11px; }
+  .skill-title > span { display: none; }
+  .skill { padding-right: 30px; }
+  .weapon-grid { gap: 10px; }
+  .weapon { padding: 15px; }
+  .weapon h3 { font-size: 21px; }
+  .login-scene { grid-template-columns: 1fr; min-height: 0; gap: 22px; padding: 22px 0; }
+  .welcome h1 { font-size: 37px; margin: 10px 0; }
+  .welcome-seal { display: none; }
+  .welcome > p:last-of-type { max-width: none; }
+  #toast { left: 50%; }
+  .page-footer { padding: 20px 10px; font-size: 7px; }
+}
+@media (max-width: 380px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .skills-grid, .weapon-grid { grid-template-columns: 1fr; }
+  .hero { padding: 22px 16px; }
+  .character-sigil { display: none; }
+  #edit-form { padding: 22px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+[hidden] { display: none !important; }
+
+.hero .portrait-button { display: flex; width: clamp(76px, 14vw, 144px); height: auto; aspect-ratio: 4 / 5; padding: 0; overflow: hidden; border-radius: 46% 46% 12% 12%; isolation: isolate; }
+.hero .portrait-button::after { inset: 4px; z-index: 2; pointer-events: none; border-color: #e3c79787; }
+.portrait-button:hover, .portrait-button:focus-visible { border-color: #f2d28f; }
+#character-monogram { transform: translateY(-6px); }
+#character-portrait { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.portrait-caption { position: absolute; z-index: 1; bottom: 0; width: 100%; padding: 5px 3px 8px; color: #fff4df; background: #251c36e8; font: 600 10px/1.1 system-ui, sans-serif; }
+.portrait-editor-grid { display: grid; grid-template-columns: clamp(88px, 28vw, 160px) minmax(0, 1fr); align-items: start; gap: 15px; }
+.portrait-preview { width: 100%; aspect-ratio: 4 / 5; position: relative; overflow: hidden; display: grid; place-items: center; background: #33283e; color: #e3cc9f; border-radius: 9px; border: 1px solid #9c8053; font-size: 28px; }
+.portrait-preview > :is(canvas, img) { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.portrait-settings { display: grid; gap: 6px; }
+.portrait-settings label { margin-bottom: 4px; }
+.portrait-settings input[type=file] { min-width: 0; width: 100%; font-size: 11px; padding: 5px; }
+.portrait-settings input[type=range] { width: 100%; padding: 0; accent-color: #78528f; }
+.portrait-settings small { font-size: 10px; }
+.portrait-settings button { justify-self: start; }
+
+  </style>
+<style>
+#stats.stats { grid-template-columns: repeat(auto-fit, 80px); gap: 8px; }
+#stats .stat { width: 80px; height: 80px; padding: 4px 2px; gap: 0; justify-content: center; }
+#stats .stat-symbol, #stats .stat-symbol svg { width: 14px; height: 14px; margin: 0; }
+#stats .stat-number { font-size: 22px; line-height: 1; }
+#stats .stat-name, #stats .stat-bonus { font-size: 8px; }
+#stats .stat-bonus { margin: 0; min-height: 0; }
+#skills .skill { min-height: 80px; padding-top: 7px; padding-bottom: 7px; }
+#er-extra { display: grid; gap: 12px; min-width: 0; }
+#er-extra details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
+#er-extra summary { font: 19px Georgia, serif; cursor: pointer; }
+.er-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(145px, 100%), 1fr)); gap: 9px; margin: 9px 0; }
+.er-fields :is(input,textarea,select), .er-table :is(input,select) { width: 100%; min-width: 0; }
+.er-table { overflow: auto; margin: 8px 0; }
+.er-table table { width: 100%; min-width: 650px; border-collapse: collapse; text-align: left; }
+.er-table :is(th,td) { padding: 4px; border-bottom: 1px solid var(--line); font-size: 12px; }
+.er-table :is(input,select) { min-width: 68px; font-size: 12px; }
+.er-summary { font-weight: 600; padding-top: 8px; }
+</style>
+<style>
+.sheet-layout:has([data-panel="grimoire"]:not([hidden])) { display: block; }
+.sheet-layout:has([data-panel="grimoire"]:not([hidden])) > .character-aside { display: none; }
+#er-extra { display: grid; gap: 16px; container-type: inline-size; }
+.er-top { display: grid; grid-template-columns: minmax(235px,.9fr) minmax(255px,1.15fr) minmax(305px,1.5fr); gap: 14px; align-items: start; }
+.er-column,.er-bottom,.er-pair { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.er-pair { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.er-box { min-width: 0; padding: 14px; }
+.er-box .section-heading { margin-bottom: 10px; }
+.er-box .section-heading h2 { font-size: 19px; }
+.er-box .section-icon { width: 28px; height: 28px; flex: 0 0 28px; font-size: 14px; }
+.er-box label { min-width: 0; overflow-wrap: anywhere; }
+.er-box .er-fields { grid-template-columns: repeat(auto-fit,minmax(min(104px,100%),1fr)); }
+[data-er-slot="identity"] .er-fields { grid-template-columns: 1fr; }
+[data-er-slot="identity"] label { display: grid; grid-template-columns: minmax(54px,.6fr) minmax(0,1.4fr); align-items: center; gap: 6px; }
+[data-er-slot="portrait"] { display: grid; place-items: center; }
+#table .portrait-button { display: flex; width: 138px; height: auto; aspect-ratio: 4 / 5; max-width: 100%; padding: 0; overflow: hidden; border-radius: 46% 46% 12% 12%; isolation: isolate; }
+#stats.stats { grid-template-columns: repeat(auto-fit,88px); gap: 9px; padding: 5px; }
+#stats .stat { width: 88px; height: 88px; padding: 6px; }
+.er-skills { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 10px; }
+.er-skill-group { min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: 9px; background: #fffdf8; }
+.er-skill-group h3 { font-size: 13px; margin: 0 0 6px; }
+.er-skill-row { padding: 7px 0; border-top: 1px solid var(--line); font-size: 12px; }
+.er-skill-row summary { cursor: pointer; font-size: 12px !important; overflow-wrap: anywhere; }
+.er-skill-row summary span { display: block; font-size: 11px; color: var(--soft); }
+.er-empty { color: var(--soft); font-size: 12px; margin: 7px 0; }
+.er-skill-group > button,.er-box > button { font-size: 12px; }
+.er-box input,.er-box textarea,.er-box select { min-width: 0; }
+.er-table th { white-space: nowrap; }
+[data-er-slot="history"] .er-table table,[data-er-slot="effects"] .er-table table,[data-er-slot="racial-abilities"] .er-table table { min-width: 0; }
+[data-er-slot="gear"] .er-table table { min-width: 485px; }
+@container(max-width: 960px) { .er-skills { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@container(max-width: 845px) { .er-top { grid-template-columns: minmax(210px,1fr) minmax(245px,1.5fr); } .er-column:last-child { grid-column: 1 / -1; grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@container(max-width: 610px) { .er-top,.er-column:last-child { grid-template-columns: 1fr; } .er-column:last-child { grid-column: auto; } .er-skills { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@container(max-width: 375px) { .er-skills,.er-pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#" aria-label="Ethereal Realms, accueil">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 3 56 18v28L32 61 8 46V18Z M32 11v42 M15 22l34 20 M15 42l34-20 M32 17l12 15-12 15-12-15Z"/></svg>
+      <span>Ethereal<br><em>Realms</em></span>
+    </a>
+    <p class="sidebar-caption">Ton histoire s’écrit ici</p>
+    <nav id="navigation" aria-label="Sections de la fiche" hidden>
+      <span class="nav-label">LE PERSONNAGE</span>
+      <button data-view="grimoire" aria-label="Mon grimoire" aria-pressed="true"><span aria-hidden="true">✧</span><span>Mon grimoire<small>Attributs & savoir-faire</small></span></button>
+      <button data-view="equipment" aria-label="Équipement" aria-pressed="false"><span aria-hidden="true">⚔</span><span>Équipement<small>Armes & possessions</small></span></button>
+      <span class="nav-label">L’AVENTURE</span>
+      <button data-view="play" aria-label="Table de jeu" aria-pressed="false"><span aria-hidden="true">◇</span><span>Table de jeu<small>Dés, butin & chronique</small></span><span id="pending-count" class="nav-count" hidden></span></button>
+    </nav>
+    <div class="sidebar-bottom"><span aria-hidden="true">✦</span><p>Chaque choix laisse<br>une empreinte.</p><small>CHRONIQUES D’ETHEREAL REALMS</small></div>
+  </aside>
+  <div class="app-shell">
+    <header class="topbar">
+      <span class="breadcrumb">Chronique de personnage <span aria-hidden="true">/</span> <strong id="view-label">Mon grimoire</strong></span>
+      <div class="right" id="session" hidden><span class="badge connection" id="connection" role="status">Fiche locale</span></div>
+    </header>
+    <main>
+      <p class="error notice" id="error" role="alert" hidden></p>
+      <section id="table" hidden>
+        <div class="hero">
+          <svg class="realm-landscape" viewBox="0 0 1200 340" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="sky" x2="1" y2="1"><stop stop-color="#211d48"/><stop offset=".5" stop-color="#60527e"/><stop offset="1" stop-color="#d39eae"/></linearGradient>
+              <linearGradient id="ridge" x2="0" y2="1"><stop stop-color="#7c9ca9"/><stop offset="1" stop-color="#344c72"/></linearGradient>
+              <linearGradient id="valley" x2="0" y2="1"><stop stop-color="#4c9998"/><stop offset="1" stop-color="#283c59"/></linearGradient>
+              <radialGradient id="aura"><stop stop-color="#ffe2a7" stop-opacity=".75"/><stop offset="1" stop-color="#ffe2a7" stop-opacity="0"/></radialGradient>
+            </defs>
+            <path fill="url(#sky)" d="M0 0h1200v340H0z"/><circle cx="912" cy="110" r="150" fill="url(#aura)"/><circle cx="912" cy="110" r="46" fill="#f6dbb5"/>
+            <path d="m300 320 180-147 100 47 120-147 95 122 115-53 185 136 105-80v142H300Z" fill="#afa2be" opacity=".6"/>
+            <path d="m300 340 177-97 142-144 71 109 91-62 104 111 117-70 198 128v25Z" fill="url(#ridge)"/><path d="m568 149 51-50 71 109-57-30-16-41-18 25Z" fill="#ece1d7" opacity=".75"/>
+            <path d="M515 340 728 236l127 40 111-34 89 56 145-13v55Z" fill="url(#valley)"/><path d="m785 340 78-53 68-2 42 23-74-2-52 34Z" fill="#c3e8d4" opacity=".7"/>
+            <path d="m1040 245 8-73 12-16 11 16 5 73m-38-44 42 1m-30-45 10-38 11 38m-2-25 17-11-17-7" fill="#343755" stroke="#ded0c0"/>
+            <path d="m760 126 46-8 35 5-18 15-20 27-14-23Z" fill="#4b586d"/><path d="m761 125 25-11 38 1 17 8-40 7Z" fill="#8db5a5"/><path d="m795 117 4-38 6-12 7 12 3 38Z" fill="#ddd4d5"/>
+            <path d="m1140 340-12-90 14-58 14 58-10 23 21 40-14-3 8 30m-650 0 8-43-10 6 17-47 17 47-11-6 10 43" fill="#213b4a"/>
+            <g fill="#ffecbe"><circle cx="725" cy="48" r="1.5"/><circle cx="1000" cy="54" r="2"/><circle cx="1100" cy="110" r="1.5"/><circle cx="653" cy="72" r="1"/></g>
+          </svg>
+          <div class="hero-shade"></div>
+          <button class="character-sigil portrait-button" id="portrait-button" type="button" data-field="portrait" aria-label="Ajouter un portrait">
+            <span id="character-monogram" aria-hidden="true">✦</span><img id="character-portrait" alt="" hidden>
+            <span class="portrait-caption" id="portrait-caption" aria-hidden="true">Ajouter un portrait</span>
+          </button>
+          <div class="hero-content"><h1 id="name"></h1><p id="detail"></p><div class="hero-footer"><span class="hero-tag">Feuille de personnage</span><span id="skill-count"></span></div></div>
+        </div>
+        <div class="sheet-layout">
+          <aside class="character-aside">
+            <section class="card"><div class="section-heading"><span class="section-icon violet" aria-hidden="true">✧</span><div><p class="eyebrow">IDENTITÉ</p><h2>Le personnage</h2></div></div><div id="identity"></div></section>
+            <div class="aside-note"><span aria-hidden="true">✦</span><p>Ta légende prend forme<br>un choix à la fois.</p></div>
+          </aside>
+          <div class="sheet-content">
+            <div class="view-panel" data-panel="grimoire">
+              <div id="er-extra"><div class="er-top"><div class="er-column"><section class="card er-box" data-er-slot="portrait"></section><section class="card er-box" data-er-slot="identity" data-block="Identité"></section><div data-er-slot="attributes"></div><section class="card er-box" data-er-slot="attribute-data" data-block="Ressources et progression"></section></div><div class="er-column"><section class="card er-box" data-er-slot="history" data-block="Historique"></section><div class="er-pair"><section class="card er-box" data-er-slot="rune" data-block="Rune et Marque des Neuf"></section><section class="card er-box" data-er-slot="effects" data-block="Rune et Marque des Neuf"></section></div><div class="er-pair"><section class="card er-box" data-er-slot="money" data-block="Ressources et progression"></section><section class="card er-box" data-er-slot="xp" data-block="Ressources et progression"></section></div><section class="card er-box" data-er-slot="combat" data-block="Ressources et progression"></section><section class="card er-box" data-er-slot="mark" data-block="Rune et Marque des Neuf"></section></div><div class="er-column"><section class="card er-box" data-er-slot="gear" data-block="Équipement"></section><div class="er-pair"><section class="card er-box" data-er-slot="racial-skill" data-block="Capacités raciales"></section><section class="card er-box" data-er-slot="racial-abilities" data-block="Capacités raciales"></section></div></div></div><div class="er-bottom"><section class="card er-box" data-er-slot="skills" data-block="Compétences"></section><section class="card er-box" data-er-slot="assets" data-block="Équipement"></section><section class="card er-box" data-er-slot="inventory" data-block="Inventaire"></section></div></div>
+              <section class="card"><div class="section-heading"><span class="section-icon gold" aria-hidden="true">◈</span><div><p class="eyebrow">CE QUI TE DÉFINIT</p><h2>Attributs</h2></div><small class="heading-note">Valeurs totales, bonus inclus</small></div><div id="stats" class="stats"></div></section>
+              <section class="card"><div class="section-heading"><span class="section-icon teal" aria-hidden="true">✺</span><div><p class="eyebrow">LES SAVOIRS ACQUIS</p><h2>Compétences</h2></div></div><div id="skills" class="skills-grid"></div></section>
+            </div>
+            <div class="view-panel" data-panel="equipment" hidden>
+              <section class="card"><div class="section-heading"><span class="section-icon rose" aria-hidden="true">⚔</span><div><p class="eyebrow">PRÊT POUR L’AVENTURE</p><h2>Armes portées</h2></div></div><div id="weapons" class="weapon-grid"></div></section>
+              <section class="card"><div class="section-heading"><span class="section-icon gold" aria-hidden="true">◇</span><div><p class="eyebrow">LES TRÉSORS DU VOYAGE</p><h2>Inventaire</h2></div></div><div id="inventory"></div></section>
+            </div>
+            <div class="view-panel" data-panel="play" hidden>
+              <section class="card dice-card"><div class="section-heading"><span class="section-icon violet" aria-hidden="true">⟡</span><div><p class="eyebrow">TENTE LE DESTIN</p><h2>Jets de compétence</h2></div></div><div id="roll"></div><div id="pending"></div></section>
+              <section class="card"><div class="section-heading"><span class="section-icon gold" aria-hidden="true">◇</span><div><p class="eyebrow">À PARTAGER</p><h2>Butin de la compagnie</h2></div></div><div id="loot-create"></div><div id="loot"></div></section>
+              <section class="card"><div class="section-heading"><span class="section-icon teal" aria-hidden="true">❧</span><div><p class="eyebrow">LES TRACES DE L’AVENTURE</p><h2>Chronique</h2></div></div><div id="journal" aria-live="polite"></div></section>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="page-footer">ETHEREAL REALMS <span aria-hidden="true">✦</span> CHRONIQUE DE PERSONNAGE</footer>
+  </div>
+  <dialog id="field-editor" aria-labelledby="editor-title" aria-describedby="editor-description">
+    <form id="edit-form">
+      <div class="editor-top"><span class="section-icon violet" id="editor-glyph" aria-hidden="true">✧</span><button type="button" id="editor-close" class="icon-button" aria-label="Fermer l’édition">×</button></div>
+      <p class="eyebrow" id="editor-kicker">FAÇONNE TON PERSONNAGE</p><h2 id="editor-title"></h2><p class="muted" id="editor-description"></p>
+      <div id="editor-control"></div>
+      <div id="editor-preview" class="editor-preview" aria-live="polite"></div>
+      <p id="editor-error" class="error" role="alert" hidden></p>
+      <div class="editor-actions"><button type="button" id="editor-cancel" class="quiet">Annuler</button><button type="submit" class="primary">Enregistrer</button></div>
+    </form>
+  </dialog>
+  <div id="toast" role="status" hidden></div>
+  <script>
+const stats = ['FOR', 'DEX', 'INT', 'SAG', 'CHA', 'VOL', 'PER', 'CON'];
+const difficulties = [
+  ['Succès Garanti', null], ['Facile', 45], ['Ordinaire', 70],
+  ['Exigeant', 95], ['Difficile', 120], ['Héroïque', 150],
+  ['Impossible', null], ['Providence Divine', null],
+];
+const statTotal = (character, stat) => {
+  const weapon = character.weapons[character.equipped];
+  return character.base[stat] + (character.racial[stat] ?? 0) + (character.armor[stat] ?? 0)
+    + (weapon?.stat === stat ? weapon.bonus : 0);
+};
+
+function requireInput(condition, message) {
+  if (!condition) throw Object.assign(new Error(message), { status: 400 });
+}
+
+function record(state, entry) {
+  state.history.unshift({ id: randomUUID(), time: new Date().toISOString(), ...entry });
+  state.history = state.history.slice(0, 200);
+}
+
+function editField(state, character, role, { field, previous, value }) {
+  const [group, key, extra] = typeof field === 'string' ? field.split('.') : [];
+  requireInput(extra === undefined, 'Champ de fiche invalide.');
+  let target = character;
+  let property = group;
+  if (group === 'base' && stats.includes(key)) {
+    target = character.base;
+    property = key;
+    requireInput(Number.isInteger(value) && value >= 0 && value <= 1000, 'Caractéristique de 0 à 1000 requise.');
+  } else if (group === 'rank' && /^\d+$/.test(key) && character.skills[Number(key)]) {
+    target = character.skills[Number(key)];
+    property = 3;
+    requireInput(Number.isInteger(value) && value >= 0 && value <= 7, 'Rang de 0 à 7 requis.');
+  } else if (group === 'equipped' && !key) {
+    requireInput(Number.isInteger(value) && character.weapons[value], 'Arme indisponible.');
+  } else if (group === 'portrait' && !key) {
+    requireInput(value === null || (typeof value === 'string' && value.startsWith('data:image/jpeg;base64,')), 'Portrait invalide.');
+  } else if (['name', 'detail'].includes(group) && !key) {
+    requireInput(typeof value === 'string' && value === value.trim() && value.length <= (group === 'name' ? 80 : 160)
+      && (group !== 'name' || value.length > 0), 'Identité de personnage invalide.');
+  } else requireInput(false, 'Champ de fiche invalide.');
+  const current = target[property];
+  if (current === value) return;
+  if (current !== previous) {
+    throw Object.assign(new Error('Ce champ a changé côté serveur.'), { status: 409, current });
+  }
+  target[property] = value;
+  const label = group === 'base' ? key : group === 'rank' ? target[0] : { name: 'Nom', detail: 'Présentation', equipped: 'Arme équipée', portrait: 'Portrait' }[group];
+  record(state, { type: 'note', text: `${role === 'mj' ? 'Le MJ modifie' : 'Modification de'} ${label} · ${character.name || 'Personnage'}.`,
+    private: true, character: character.id });
+}
+
+function resolveRoll(state, request, options) {
+  const { level, threshold, divine } = options;
+  requireInput(Number.isInteger(level) && difficulties[level], 'Palier invalide.');
+  const character = state.characters.find(c => c.id === request.character);
+  const [skill, , , rank] = character.skills[request.skill];
+  const attribute = statTotal(character, request.stat);
+  const rankBonus = attribute * rank;
+  const roll = {
+    type: 'roll', character: character.id, name: character.name, skill, level,
+    stat: request.stat, attribute, rankBonus, modifier: request.modifier, private: request.private,
+  };
+  if (level === 0 || level === 6) roll.success = level === 0;
+  else if (level === 7 && divine !== 'roll') {
+    requireInput(divine === 'success' || divine === 'none', 'Choisis le mode d’intervention divine.');
+    roll.success = divine === 'success';
+    roll.divine = divine;
+  } else {
+    roll.threshold = threshold ?? difficulties[level][1];
+    requireInput(Number.isInteger(roll.threshold) && roll.threshold >= 1 && roll.threshold <= 999, 'Seuil de 1 à 999 requis.');
+    roll.die = randomInt(1, 101);
+    roll.total = roll.die + attribute + rankBonus + request.modifier;
+    roll.success = roll.total >= roll.threshold;
+    if (level === 7) roll.divine = divine;
+  }
+  record(state, roll);
+}
+
+function apply(state, role, action) {
+  requireInput(action && typeof action === 'object', 'Action invalide.');
+  const character = state.characters.find(c => c.id === action.character && (role === 'mj' || c.id === role));
+  switch (action.type) {
+    case 'edit':
+      requireInput(character, 'Cette fiche ne fait pas partie de ton compte.');
+      editField(state, character, role, action);
+      break;
+    case 'request': {
+      const skill = character?.skills[action.skill];
+      requireInput(Number.isInteger(action.skill) && skill && skill.slice(1, 3).includes(action.stat), 'Compétence ou caractéristique invalide.');
+      requireInput(Number.isInteger(action.modifier) && Math.abs(action.modifier) <= 999, 'Bonus de situation invalide.');
+      requireInput(!state.pending.some(entry => entry.character === character.id), 'Ce personnage a déjà un jet en attente.');
+      state.pending.push({ id: randomUUID(), character: character.id, name: character.name, skill: action.skill,
+        label: skill[0], stat: action.stat, modifier: action.modifier, private: action.private === true });
+      break;
+    }
+    case 'resolve': {
+      const request = state.pending.find(entry => entry.id === action.id);
+      requireInput(role === 'mj' && request, 'Ce jet n’est plus disponible.');
+      resolveRoll(state, request, action);
+      state.pending = state.pending.filter(entry => entry.id !== request.id);
+      break;
+    }
+    case 'cancel':
+      requireInput(state.pending.some(entry => entry.id === action.id && (role === 'mj' || entry.character === role)), 'Ce jet n’est plus disponible.');
+      state.pending = state.pending.filter(entry => entry.id !== action.id);
+      break;
+    case 'loot': {
+      const name = typeof action.name === 'string' ? action.name.trim() : '';
+      requireInput(role === 'mj' && name.length > 0 && name.length <= 80, 'Nom de butin invalide ou droits insuffisants.');
+      requireInput(Number.isInteger(action.quantity) && action.quantity >= 1 && action.quantity <= 999, 'Quantité de 1 à 999 requise.');
+      state.loot.push({ id: randomUUID(), name, quantity: action.quantity });
+      break;
+    }
+    case 'claim': {
+      const item = state.loot.find(entry => entry.id === action.id);
+      requireInput(character && item, 'Ce butin a déjà été récupéré ou le personnage est indisponible.');
+      const stack = character.inventory.find(entry => entry.name === item.name);
+      if (stack) stack.quantity += item.quantity;
+      else character.inventory.push({ name: item.name, quantity: item.quantity });
+      state.loot = state.loot.filter(entry => entry.id !== item.id);
+      record(state, { type: 'note', text: `${character.name} récupère ${item.quantity} × ${item.name}.` });
+      break;
+    }
+    default:
+      requireInput(false, 'Action inconnue.');
+  }
+}
+
+
+const $ = id => document.getElementById(id);
+const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+const signed = value => value >= 0 ? `+${value}` : String(value);
+const empty = message => `<p class="empty-state">${message}</p>`;
+const option = (value, label) => `<option value="${value}">${escape(label)}</option>`;
+const painted = new Map();
+let state;
+let editor = null, toastTimer;
+const attributeStyles = {
+  FOR: { name: 'Force', color: '#b45c69', tint: '#fbecef', line: '#efd3d8', glyph: 'M7 21 3 17 15 5l4 4Z M14 6l3-3 4 4-3 3 M4 20l-2 2 M5 15l4 4' },
+  DEX: { name: 'Dextérité', color: '#438c7b', tint: '#eaf5ee', line: '#cee6d7', glyph: 'm13 2-8 12h7l-1 8 8-12h-7Z' },
+  INT: { name: 'Intelligence', color: '#6f78b1', tint: '#eef0fa', line: '#d9dff2', glyph: 'M3 4c4-1 7 0 9 2 2-2 5-3 9-2v15c-4-1-7 0-9 2-2-2-5-3-9-2Z M12 6v15 M6 8l3 1 M15 9l3-1' },
+  SAG: { name: 'Sagesse', color: '#b89649', tint: '#faf3df', line: '#eadfbc', glyph: 'M20 3C10 2 3 8 4 16c8 2 15-4 16-13Z M3 22 15 10 M7 18l-1-5 M10 15l5-1' },
+  CHA: { name: 'Charisme', color: '#b56d9a', tint: '#f9ecf5', line: '#ebd2e2', glyph: 'm3 6 5 5 4-8 4 8 5-5-3 13H6Z M6 16h12' },
+  VOL: { name: 'Volonté', color: '#8870ab', tint: '#f0eafa', line: '#e2d6ee', glyph: 'm12 2 9 4v6c-1 5-5 8-9 10-4-2-8-5-9-10V6Z M12 6v12 M8 12h8' },
+  PER: { name: 'Perception', color: '#5597a7', tint: '#eaf4f8', line: '#cde5ec', glyph: 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z' },
+  CON: { name: 'Constitution', color: '#bd8862', tint: '#faf0e7', line: '#eed9c8', glyph: 'M12 21 3 12c-6-8 5-13 9-6 4-7 15-2 9 6Z M4 12h4l2-4 3 8 2-4h5' },
+};
+
+function glyph(path) {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg>`;
+}
+const pencil = glyph('m16 3 5 5-12 12-6 1 1-6Z M14 5l5 5 M4 15l5 5');
+
+function setView(view) {
+  for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== view;
+  for (const button of document.querySelectorAll('[data-view]')) button.setAttribute('aria-pressed', String(button.dataset.view === view));
+  $('view-label').textContent = { grimoire: 'Mon grimoire', equipment: 'Équipement', play: 'Table de jeu' }[view];
+}
+
+function toast(message) {
+  clearTimeout(toastTimer);
+  $('toast').textContent = message;
+  $('toast').hidden = false;
+  toastTimer = setTimeout(() => { $('toast').hidden = true; }, 3500);
+}
+
+function fieldValue(character, field) {
+  const [group, key] = field.split('.');
+  if (group === 'base') return character.base[key];
+  if (group === 'rank') return character.skills[key][3];
+  return character[group];
+}
+
+function paint(id, html) {
+  if (painted.get(id) === html) return;
+  $(id).innerHTML = html;
+  painted.set(id, html);
+}
+
+function showError(error) {
+  $('error').hidden = !error;
+  $('error').textContent = error || '';
+}
+
+function errorHandled(callback) {
+  return async event => {
+    try { showError(''); await callback(event); }
+    catch (error) { showError(error.message); }
+  };
+}
+
+function render() {
+  const gm = true;
+  const character = state.characters[0];
+  $('name').textContent = character.name || 'Personnage sans nom';
+  $('detail').textContent = character.detail;
+  renderPortrait(character);
+  $('skill-count').textContent = `${character.skills.length} compétences inscrites`;
+  $('pending-count').textContent = state.pending.length;
+  $('pending-count').hidden = !state.pending.length;
+  const fieldButton = (field, label) => editable ? `<button class="icon-button" data-field="${field}" aria-label="Modifier ${escape(label)}" title="Modifier ${escape(label)}">${pencil}</button>` : '';
+  paint('identity', `<div class="identity-field"><small>Nom du personnage</small><strong>${escape(character.name || 'À renseigner')}</strong>${fieldButton('name', 'le nom')}</div>
+    <div class="identity-field"><small>Présentation</small><strong>${escape(character.detail || 'Écris les premières lignes de son histoire…')}</strong>${fieldButton('detail', 'la présentation')}</div>`);
+  paint('skills', character.skills.map(([name, a, b, rank], index) => `<div class="skill"><div class="skill-title"><span aria-hidden="true">✧</span><strong>${escape(name)}</strong></div>
+    <small>${a} <strong>${character.totals[a] * (rank + 1)}</strong> · ${b} <strong>${character.totals[b] * (rank + 1)}</strong></small>
+    <div class="rank-marks"><span class="${rank > 0 ? 'filled' : ''}" aria-hidden="true"></span>${Array.from({ length: 6 }, (_, i) => `<span class="${rank > i + 1 ? 'filled' : ''}" aria-hidden="true"></span>`).join('')}<small>RANG ${rank}</small></div>${fieldButton(`rank.${index}`, name)}</div>`).join(''));
+  paint('stats', state.stats.map(stat => {
+    const base = character.base[stat];
+    const racial = character.racial[stat] || 0;
+    const armor = character.armor[stat] || 0;
+    const weapon = character.weapons[character.equipped];
+    const bonus = weapon?.stat === stat ? weapon.bonus : 0;
+    const style = attributeStyles[stat];
+    const bonuses = racial + armor + bonus;
+    const tag = editable ? 'button' : 'div';
+    return `<${tag} class="stat${editable ? '' : ' readonly'}" style="--stat-color:${style.color};--stat-tint:${style.tint};--stat-line:${style.line}"
+      ${editable ? `data-field="base.${stat}" aria-label="Modifier ${style.name}, total ${character.totals[stat]}"` : ''}>
+      <span class="stat-symbol">${glyph(style.glyph)}</span><span class="stat-label">${stat}</span>
+      <strong class="stat-number">${character.totals[stat]}</strong><span class="stat-name">${style.name}</span>
+      <small class="stat-bonus">${base} de base${bonuses ? ` ${signed(bonuses)}` : ''}</small>${editable ? '<span class="edit-hint" aria-hidden="true">✎</span>' : ''}</${tag}>`;
+  }).join(''));
+  paint('weapons', character.weapons.map((weapon, index) => `
+    <div class="weapon ${index === character.equipped ? 'active' : ''}"><span class="weapon-emblem">${glyph(attributeStyles.FOR.glyph)}</span>
+    <h3>${escape(weapon.name)}</h3><small>${signed(weapon.bonus)} ${weapon.stat} lorsque équipée</small>
+    ${index === character.equipped ? '<span class="badge">Arme équipée</span>' : `<button data-equip="${index}" ${editable ? '' : 'disabled'}>Équiper cette arme</button>`}</div>`).join('') || empty('Les armes portées par ton personnage apparaîtront ici.'));
+  paint('inventory', character.inventory.map(item => `<div class="line"><span class="inventory-name"><span class="inventory-icon" aria-hidden="true">◇</span><span>${escape(item.name)}</span></span><strong class="inventory-quantity">× ${item.quantity}</strong></div>`).join('') || empty('Les trésors de ton aventure attendent de remplir cet inventaire.'));
+
+  paint('roll', `<form id="roll-form" data-character="${character.id}">
+    <label>Compétence<select name="skill">${character.skills.map(([name, , , rank], i) => option(i, `${name} · rang ${rank}`)).join('')}</select></label>
+    <label>Caractéristique<select name="stat"></select></label>
+    <label>Bonus de situation<input name="modifier" type="number" value="0" min="-999" max="999" required></label>
+    <button class="primary">Préparer un jet</button></form><p id="roll-preview" class="muted"></p>`);
+  renderRollPreview(character);
+  paint('pending', state.pending.map(entry => `<div class="line"><div><strong>${escape(entry.name)} · ${escape(entry.label)}</strong><br>
+    <small>${entry.stat} · Situation ${signed(entry.modifier)}${entry.private ? ' · Privé' : ''}</small></div>
+    <button data-cancel="${entry.id}">Annuler</button>
+    ${gm ? `<form data-resolve="${entry.id}"><label>Palier<select name="level">${state.difficulties.map(([label], i) => option(i, label)).join('')}</select></label>
+    <label data-threshold hidden>Seuil<input name="threshold" type="number" min="1" max="999"></label>
+    <label data-divine hidden>Intervention<select name="divine">${option('none', 'Aucune')}${option('success', 'Réussite accordée')}${option('roll', 'Jet rendu possible')}</select></label>
+    <button class="primary">Résoudre</button></form>` : '<span class="badge">En attente du MJ</span>'}</div>`).join(''));
+
+  paint('loot-create', gm ? '<form id="loot-form"><label>Objet<input name="name" maxlength="80" required></label><label>Quantité<input name="quantity" type="number" value="1" min="1" max="999" required></label><button>Publier</button></form>' : '');
+  paint('loot', state.loot.map(item => `<div class="line"><span>${escape(item.name)} <strong>× ${item.quantity}</strong></span>
+    <button data-claim="${item.id}">${gm ? 'Ajouter à l’inventaire' : 'Récupérer'}</button></div>`).join('') || empty('Aucun butin à distribuer.'));
+  paint('journal', state.history.map(entry => {
+    const time = new Date(entry.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    if (entry.type === 'note') return `<div class="line"><span>${escape(entry.text)}</span><small>${time}</small></div>`;
+    const formula = entry.die ? `d100 ${entry.die} + ${entry.stat} ${entry.attribute} + rang ${entry.rankBonus} ${signed(entry.modifier)} = ${entry.total} / seuil ${entry.threshold}` : 'Résolution sans lancer';
+    return `<div class="line"><div><strong>${escape(entry.name)} · ${escape(entry.skill)}</strong><br><small>${escape(state.difficulties[entry.level][0])} · ${formula}${entry.private ? ' · Privé' : ''}</small></div>
+    <strong class="${entry.success ? 'ok' : 'failed'}">${entry.success ? 'Réussite' : 'Échec'}</strong><small>${time}</small></div>`;
+  }).join('') || empty('Les actions de la table apparaîtront ici.'));
+  if (editor) {
+    previewEditor();
+  }
+}
+
+function renderRollPreview(character = state.characters[0]) {
+  const form = $('roll-form');
+  const [, a, b, rank] = character.skills[Number(form.elements.skill.value)];
+  const select = form.elements.stat;
+  const previous = select.value;
+  const choices = [a, b].map(stat => option(stat, `${stat} · ${character.totals[stat]}`)).join('');
+  if (select.dataset.choices !== choices) {
+    select.innerHTML = choices;
+    select.dataset.choices = choices;
+    if ([a, b].includes(previous)) select.value = previous;
+  }
+  const attribute = character.totals[select.value];
+  $('roll-preview').textContent = `1d100 + ${attribute} (${select.value}) + ${attribute * rank} (rang) ${signed(Number(form.elements.modifier.value) || 0)} (situation)`;
+}
+
+function openEditor(field, trigger) {
+  const character = state.characters[0];
+  const previous = fieldValue(character, field);
+  const numeric = typeof previous === 'number';
+  const isRank = field.startsWith('rank.');
+  const stat = field.split('.')[1];
+  editor = { field, previous, trigger, saving: false };
+  $('editor-error').hidden = true;
+  $('editor-kicker').textContent = isRank ? 'LES SAVOIRS ACQUIS' : numeric ? 'CE QUI TE DÉFINIT' : 'FAÇONNE TON PERSONNAGE';
+  $('editor-title').textContent = isRank ? character.skills[stat][0] : numeric ? attributeStyles[stat].name
+    : field === 'name' ? 'Un nom à raconter' : 'Les premières lignes';
+  $('editor-glyph').textContent = isRank ? '✧' : numeric ? '◈' : '❧';
+  $('editor-description').textContent = isRank ? 'Choisis le rang de cette compétence. Ses deux bonus se recalculent ensemble.'
+    : numeric ? 'Ajuste la valeur de base. Les bonus de race et d’équipement s’ajoutent automatiquement.'
+    : field === 'name' ? 'Le nom sous lequel ton personnage traverse les royaumes.'
+    : 'Peuple, origine, vocation… Quelques lignes pour donner vie à ton personnage.';
+
+  if (field === 'portrait') {
+    $('editor-title').textContent = 'Portrait du personnage';
+    $('editor-description').textContent = 'Importe une image, puis ajuste le zoom et la position dans le cadre.';
+    $('editor-control').innerHTML = portraitControls(previous);
+    drawPortrait();
+  } else if (isRank) {
+    $('editor-control').innerHTML = `<input id="editor-value" type="hidden" name="value" value="${previous}">
+      <div class="rank-picker" role="group" aria-label="Rang de la compétence">${Array.from({ length: 8 }, (_, rank) => `<button type="button" data-rank="${rank}" aria-pressed="${rank === previous}">${rank}<small>RANG ${rank}</small></button>`).join('')}</div>`;
+  } else if (numeric) {
+    $('editor-control').innerHTML = `<div class="number-control">
+      <button type="button" data-step="-1" aria-label="Diminuer de un">−</button>
+      <input id="editor-value" name="value" type="number" min="0" max="1000" step="1" value="${previous}" required aria-label="Valeur de base de ${attributeStyles[stat].name}">
+      <button type="button" data-step="1" aria-label="Augmenter de un">+</button></div>
+      <div class="step-shortcuts"><button type="button" data-step="-5">−5 points</button><button type="button" data-step="5">+5 points</button></div>`;
+  } else {
+    $('editor-control').innerHTML = field === 'detail'
+      ? `<label for="editor-value">Présentation</label><textarea id="editor-value" name="value" maxlength="160" rows="4" placeholder="D’où vient ton personnage ? Qu’est-ce qui l’anime ?">${escape(previous)}</textarea>`
+      : `<label for="editor-value">Nom du personnage</label><input id="editor-value" name="value" maxlength="80" required value="${escape(previous)}" autocomplete="off">`;
+  }
+  previewEditor();
+  $('field-editor').showModal();
+  if (isRank) $('editor-control').querySelector('[aria-pressed=true]').focus();
+  else $(field === 'portrait' ? 'portrait-file' : 'editor-value').focus();
+}
+
+function previewEditor() {
+  if (!editor) return;
+  const character = state.characters[0];
+  if (!character) return;
+  const { field } = editor;
+  $('editor-preview').hidden = field === 'portrait';
+  if (field === 'portrait') return;
+  const raw = $('editor-value').value;
+  const proposed = Number(raw);
+  if (field.startsWith('base.')) {
+    const stat = field.slice(5);
+    const total = character.totals[stat];
+    const bonus = total - character.base[stat];
+    const weapon = character.weapons[character.equipped];
+    const details = [
+      ['Race', character.racial[stat] || 0], ['Armure', character.armor[stat] || 0],
+      ['Arme équipée', weapon?.stat === stat ? weapon.bonus : 0],
+    ].filter(([, value]) => value).map(([label, value]) => `${label} ${signed(value)}`).join(' · ');
+    const valid = raw.trim() !== '' && Number.isInteger(proposed) && proposed >= 0 && proposed <= 1000;
+    $('editor-preview').innerHTML = `<div class="preview-total"><span>${total}</span><span aria-hidden="true">→</span><strong>${valid ? proposed + bonus : '—'}</strong><small>Total ${stat}</small></div>
+      <p>${details || 'Aucun bonus supplémentaire pour cet attribut.'}</p>`;
+  } else if (field.startsWith('rank.')) {
+    const [, a, b] = character.skills[field.slice(5)];
+    $('editor-preview').innerHTML = `<div class="preview-total"><strong>${a} ${character.totals[a] * (proposed + 1)}</strong><span>·</span><strong>${b} ${character.totals[b] * (proposed + 1)}</strong></div><p>Bonus total pour chaque caractéristique au rang ${proposed}.</p>`;
+  } else {
+    const limit = field === 'name' ? 80 : 160;
+    $('editor-preview').textContent = `${raw.length} / ${limit} caractères · Ta fiche s’actualisera à l’enregistrement.`;
+  }
+  if (fieldValue(character, field) !== editor.previous) {
+    $('editor-preview').insertAdjacentHTML('beforeend', '<p class="error">Cette valeur a changé pendant ton édition. Les deux versions seront comparées à l’enregistrement.</p>');
+  }
+}
+
+function closeEditor() {
+  const field = editor?.field;
+  const trigger = editor?.trigger;
+  $('field-editor').close();
+  editor = null;
+  if (trigger?.isConnected) trigger.focus();
+  else if (field) document.querySelector(`[data-field="${field}"]`)?.focus();
+}
+
+async function saveEditor() {
+  const editing = editor;
+  if (!editing || editing.saving || editing.importing) return;
+  const form = $('edit-form');
+  const submit = form.querySelector('[type=submit]');
+  const control = $('editor-value');
+  const numeric = typeof editing.previous === 'number';
+  editing.saving = true;
+  submit.disabled = true;
+  $('editor-error').hidden = true;
+  try {
+    const value = editing.field === 'portrait' ? portraitValue(editing) : numeric ? Number(control.value) : control.value.trim();
+    if (numeric && (!control.value.trim() || !Number.isInteger(value) || value < 0 || value > (editing.field.startsWith('rank.') ? 7 : 1000))) throw new Error('Choisis une valeur entière dans les limites indiquées.');
+    if (editing.field === 'name' && !value) throw new Error('Donne un nom à ton personnage.');
+    await edit(editing.field, value, editing.previous);
+    if (editor === editing) closeEditor();
+    toast('Fiche enregistrée sur cet appareil.');
+  } catch (error) {
+    if (editor === editing) {
+      $('editor-error').textContent = error.status === 409
+        ? `La valeur a changé côté serveur (${error.current}). Ferme et rouvre cet éditeur pour repartir de la fiche actuelle.` : error.message;
+      $('editor-error').hidden = false;
+    }
+  } finally {
+    editing.saving = false;
+    submit.disabled = false;
+  }
+}
+
+document.addEventListener('submit', errorHandled(async event => {
+  event.preventDefault();
+  const form = event.target;
+  if (form.id === 'edit-form') {
+    await saveEditor();
+    return;
+  }
+  const data = new FormData(form);
+  const button = form.querySelector('button');
+  button.disabled = true;
+  try {
+    if (form.id === 'roll-form') {
+      await act({ type: 'request', skill: Number(data.get('skill')), stat: data.get('stat'), modifier: Number(data.get('modifier')), private: data.has('private') });
+    } else if (form.id === 'loot-form') {
+      await act({ type: 'loot', name: data.get('name'), quantity: Number(data.get('quantity')) });
+      form.reset();
+    } else if (form.dataset.resolve) {
+      await act({ type: 'resolve', id: form.dataset.resolve, level: Number(data.get('level')), threshold: data.get('threshold') ? Number(data.get('threshold')) : null, divine: data.get('divine') });
+    }
+  } finally { button.disabled = false; }
+}));
+
+document.addEventListener('change', event => {
+  const field = event.target;
+  if (field.id === 'portrait-file') void importPortrait(field);
+  if (field.form?.id === 'roll-form') renderRollPreview();
+  if (field.form?.dataset.resolve && ['level', 'divine'].includes(field.name)) {
+    const form = field.form;
+    const level = Number(form.elements.level.value);
+    const defaultThreshold = state.difficulties[level][1];
+    const input = form.elements.threshold;
+    input.required = defaultThreshold !== null || (level === 7 && form.elements.divine.value === 'roll');
+    input.parentElement.hidden = !input.required;
+    input.value = defaultThreshold ?? '';
+    form.elements.divine.parentElement.hidden = level !== 7;
+  }
+});
+
+document.addEventListener('input', event => {
+  if (event.target.form?.id === 'roll-form' && event.target.name === 'modifier') renderRollPreview();
+  if (event.target.id === 'editor-value') previewEditor();
+  if (editor?.field === 'portrait' && event.target.type === 'range') drawPortrait();
+});
+
+document.addEventListener('click', errorHandled(async event => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  if (button.dataset.view) {
+    setView(button.dataset.view);
+    return;
+  }
+  if (button.closest('#edit-form')) {
+    if (button.id === 'editor-close' || button.id === 'editor-cancel') closeEditor();
+    else if (button.id === 'portrait-remove') {
+      editor.removed = true;
+      editor.source = null;
+      drawPortrait();
+    } else if (button.dataset.step) {
+      const input = $('editor-value');
+      input.value = Math.min(1000, Math.max(0, Number(input.value) + Number(button.dataset.step)));
+      previewEditor();
+    } else if (button.dataset.rank !== undefined) {
+      $('editor-value').value = button.dataset.rank;
+      for (const rank of $('editor-control').querySelectorAll('[data-rank]')) rank.setAttribute('aria-pressed', String(rank === button));
+      previewEditor();
+    }
+    return;
+  }
+  if (button.form) return;
+  button.disabled = true;
+  try {
+    if (button.dataset.equip) await edit('equipped', Number(button.dataset.equip));
+    else if (button.dataset.claim) await act({ type: 'claim', id: button.dataset.claim });
+    else if (button.dataset.cancel) await act({ type: 'cancel', id: button.dataset.cancel });
+    else if (button.dataset.field) {
+      openEditor(button.dataset.field, button);
+    }
+  } finally { button.disabled = false; }
+}));
+
+$('field-editor').addEventListener('cancel', event => {
+  event.preventDefault();
+  closeEditor();
+});
+$('field-editor').addEventListener('click', event => {
+  if (event.target !== $('field-editor')) return;
+  const box = event.target.getBoundingClientRect();
+  if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) closeEditor();
+});
+
+
+
+const saveKey = 'ethereal-realms:fiche-locale:v1';
+const randomUUID = () => crypto.randomUUID?.() ?? Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
+const randomInt = (min, max) => {
+  const bytes = new Uint32Array(1);
+  const span = max - min;
+  const limit = 2 ** 32 - (2 ** 32 % span);
+  do { crypto.getRandomValues(bytes); } while (bytes[0] >= limit);
+  return min + bytes[0] % span;
+};
+let campaign;
+const editable = true;
+
+function blankCampaign() {
+  return {
+    characters: [{
+      id: 'local', name: '', detail: '', portrait: null,
+      base: Object.fromEntries(stats.map(stat => [stat, 0])),
+      racial: {}, armor: {}, equipped: null, weapons: [], inventory: [],
+      skills: [
+        ['Furtivité', 'DEX', 'PER', 0], ['Négociation', 'CHA', 'INT', 0],
+        ['Maîtrise des Armes Courtes', 'DEX', 'FOR', 0], ['Parade', 'DEX', 'FOR', 0],
+        ['Esquive', 'DEX', 'FOR', 0], ['Observation', 'PER', 'INT', 0],
+        ['Orientation', 'PER', 'INT', 0], ["Choix d’itinéraire", 'PER', 'SAG', 0],
+      ],
+    }],
+    pending: [], loot: [], history: [],
+  };
+}
+
+function refreshView() {
+  state = { ...campaign, stats, difficulties };
+  const character = state.characters[0];
+  character.totals = Object.fromEntries(stats.map(stat => [stat, statTotal(character, stat)]));
+  render();
+}
+
+async function act(payload) {
+  const next = structuredClone(campaign);
+  apply(next, 'mj', { character: campaign.characters[0].id, ...payload });
+  try {
+    localStorage.setItem(saveKey, JSON.stringify(next));
+  } catch {
+    throw new Error('Ce navigateur n’a pas pu enregistrer la fiche. Vérifie que le stockage local est autorisé et dispose d’espace.');
+  }
+  campaign = next;
+  refreshView();
+}
+
+function edit(field, value, previous = fieldValue(campaign.characters[0], field)) {
+  return act({ type: 'edit', field, previous, value });
+}
+
+function startLocal() {
+  campaign = blankCampaign();
+  try {
+    const saved = localStorage.getItem(saveKey);
+    if (saved) campaign = JSON.parse(saved);
+  } catch {
+    showError('La sauvegarde locale n’a pas pu être ouverte.');
+  }
+  $('table').hidden = false;
+  $('session').hidden = false;
+  $('navigation').hidden = false;
+  refreshView();
+}
+
+function renderPortrait(character) {
+  const image = $('character-portrait');
+  const portrait = character.portrait;
+  if (portrait && image.getAttribute('src') !== portrait) image.src = portrait;
+  if (!portrait) image.removeAttribute('src');
+  image.hidden = !portrait;
+  $('character-monogram').hidden = Boolean(portrait);
+  $('character-monogram').textContent = character.name.trim().split(/\s+/).slice(0, 2)
+    .map(word => [...word][0]).join('').toUpperCase() || '✦';
+  $('portrait-button').setAttribute('aria-label', portrait ? 'Modifier le portrait' : 'Ajouter un portrait');
+  $('portrait-caption').textContent = portrait ? 'Modifier' : 'Ajouter un portrait';
+}
+
+function portraitControls(previous) {
+  return '<div class="portrait-editor-grid">'
+    + '<div class="portrait-preview"><canvas id="portrait-crop" width="320" height="400" role="img" aria-label="Aperçu du portrait recadré" hidden></canvas>'
+    + '<img id="portrait-existing" alt="Portrait actuel" hidden><span id="portrait-placeholder" aria-hidden="true">✦</span></div>'
+    + '<div class="portrait-settings"><label for="portrait-file">Image du personnage</label>'
+    + '<input id="portrait-file" type="file" accept="image/jpeg,image/png,image/webp">'
+    + '<small>JPG, PNG ou WebP · 15 Mo max.</small>'
+    + '<div id="portrait-sliders" hidden>'
+    + '<label>Zoom<input id="portrait-zoom" type="range" min="100" max="300" value="100"></label>'
+    + '<label>Cadrage horizontal<input id="portrait-x" type="range" min="0" max="100" value="50"></label>'
+    + '<label>Cadrage vertical<input id="portrait-y" type="range" min="0" max="100" value="50"></label>'
+    + '</div><button type="button" class="quiet" id="portrait-remove"' + (previous ? '' : ' hidden') + '>Retirer le portrait</button></div></div>';
+}
+
+function drawPortrait() {
+  const canvas = $('portrait-crop');
+  const source = editor?.source;
+  const existing = $('portrait-existing');
+  const previous = editor.removed ? null : editor.previous;
+  canvas.hidden = !source;
+  existing.hidden = Boolean(source) || !previous;
+  if (previous && existing.getAttribute('src') !== previous) existing.src = previous;
+  $('portrait-placeholder').hidden = Boolean(source || previous);
+  $('portrait-sliders').hidden = !source;
+  $('portrait-remove').hidden = !(source || previous);
+  if (!source) return;
+  const { width, height } = canvas;
+  const scale = Math.max(width / source.naturalWidth, height / source.naturalHeight) * ($('portrait-zoom').value / 100);
+  const cropWidth = width / scale, cropHeight = height / scale;
+  const x = Math.max(0, source.naturalWidth - cropWidth) * ($('portrait-x').value / 100);
+  const y = Math.max(0, source.naturalHeight - cropHeight) * ($('portrait-y').value / 100);
+  const context = canvas.getContext('2d');
+  context.fillStyle = '#2c233b';
+  context.fillRect(0, 0, width, height);
+  context.drawImage(source, x, y, cropWidth, cropHeight, 0, 0, width, height);
+}
+
+async function importPortrait(input) {
+  const file = input.files[0];
+  const editing = editor;
+  if (!file || editing?.field !== 'portrait') return;
+  const attempt = editing.importAttempt = (editing.importAttempt ?? 0) + 1;
+  const submit = $('edit-form').querySelector('[type=submit]');
+  const feedback = $('editor-error');
+  input.value = '';
+  submit.disabled = true;
+  editing.importing = true;
+  feedback.hidden = true;
+  let url;
+  try {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 15 * 1024 * 1024) {
+      throw new Error('Choisis une image JPG, PNG ou WebP de 15 Mo maximum.');
+    }
+    url = URL.createObjectURL(file);
+    const image = new Image();
+    image.src = url;
+    try { await image.decode(); }
+    catch { throw new Error('Cette image ne peut pas être ouverte.'); }
+    if (editor !== editing || editing.importAttempt !== attempt) return;
+    editing.source = image;
+    editing.removed = false;
+    $('portrait-zoom').value = 100;
+    $('portrait-x').value = $('portrait-y').value = 50;
+    drawPortrait();
+  } catch (error) {
+    if (editor === editing && editing.importAttempt === attempt) {
+      feedback.textContent = error.message;
+      feedback.hidden = false;
+    }
+  } finally {
+    if (url) URL.revokeObjectURL(url);
+    if (editor === editing && editing.importAttempt === attempt) {
+      editing.importing = false;
+      submit.disabled = false;
+    }
+  }
+}
+
+function portraitValue(editing) {
+  if (editing.removed) return null;
+  if (!editing.source) return editing.previous;
+  return $('portrait-crop').toDataURL('image/jpeg', 0.88);
+}
+
+
+const erGroups = ['Racial & Historique','Combat','Social','Survie','Voyage','Commerce','Artisanat','Sciences','Ombre','Éther'];
+const erFields = {
+  'Identité': ['Nom','Prénom','Âge','Race','Origine','Job','Rang'],
+  'Ressources et progression': ['PV actuels#','Points d’attribut totaux#','XP totale#','Ajustement XP#','PA#','LE#','Bonus de dégâts#','Bonus d’armure#'],
+  'Rune et Marque des Neuf': ['Niveau#','Élément','Type','Rang#','ER actuels#','Marque des Neuf~'],
+  'Capacités raciales': ['Compétence raciale~',...stats.map(stat=>stat+'#')]
+};
+const erTables = {
+  'Historique': ['Jet ou date','Événement','Effet'],
+  'Rune et Marque des Neuf': ['Effet','Coût ER#','Modificateur','Description'],
+  'Capacités raciales': ['Capacité','Effet','Description'],
+  'Équipement': ['Emplacement','Nom','Type','Rareté','Tier#','Carac@','Bonus#','Att./Déf.#','Portée','Effets','Valeur#'],
+  'Inventaire': ['Nom','Sceau artisan','Rareté','Tier#','Effets','Qté#','Prix unitaire#'],
+  'Compétences': ['Nom','Carac A@','Carac B@','Rang#','Coût de base XP#','Catégorie%']
+};
+const erSlots = ['Tête','Torse','Mains','Jambes','Pieds','Amulette','Anneau 1','Anneau 2','Ceinture','Relique','Arme principale','Arme secondaire'];
+const erInventory = ['name','seal','rarity','tier','effects','quantity','unit'];
+const erCatalog = [
+  'Furtivité|DEX|PER|150|0','Négociation|CHA|INT|150|0','Persuasion|CHA|INT|150|0','Diplomatie|CHA|INT|240|0','Tactiques de Vente|CHA|PER|180|0',
+  'Maîtrise des Armes Courtes|DEX|FOR|150|1','Parade|DEX|FOR|210|1','Esquive|DEX|PER|180|1','Combat Acrobatique|DEX|VOL|240|1','Riposte|DEX|VOL|210|1',
+  'Pistage|PER|DEX|180|3','Adaptabilité|CON|PER|180|3','Observation|PER|INT|210|3','Orientation|PER|INT|180|3','Premiers Secours|CON|SAG|210|3','Bivouac|CON|INT|150|3','Repérage|INT|PER|210|3','Détection|SAG|PER|180|3','Dépeçage|DEX|FOR|180|3','Récolte de Toxines|INT|PER|210|3',
+  'Adaptation au Terrain|SAG|DEX|180|4','Athlétisme|FOR|CON|150|4','Acrobatie|DEX|FOR|210|4','Escalade|FOR|DEX|150|4','Natation|CON|DEX|150|4','Choix d’itinéraire|PER|SAG|180|4',
+  'Baratin|INT|CHA|210|8','Crochetage|DEX|INT|180|8','Détection de Pièges|PER|INT|210|8','Déguisement|CHA|PER|180|8',"Techniques d'Assassinat|INT|VOL|300|8",'Escamotage|DEX|VOL|210|8','Maîtrise des Poisons|INT|DEX|180|8'
+].map(s=>{const [name,a,b,c,g]=s.split('|');return [name,a,b,0,Number(c),erGroups[Number(g)]];});
+const erLabel = label=>label.replace(/[#~@%]$/,'');
+const erNum = value=>Number(value)||0;
+function erData(c) {
+  return c.grimoire??{
+    fields:{}, rows:{}, gear:erSlots.map((slot,i)=>{
+      const w=i>=10?c.weapons[i-10]:null;
+      return w?[slot,w.name,'','',null,w.stat,w.bonus]:[slot];
+    })
+  };
+}
+function erRows(c,block) {
+  const d=erData(c);
+  if(block==='Équipement') return d.gear;
+  if(block==='Inventaire') return c.inventory.map(item=>erInventory.map(key=>item[key]));
+  if(block==='Compétences') return c.skills;
+  return d.rows[block]??[];
+}
+function erControl(label,value,attributes) {
+  const a=' aria-label="'+escape(erLabel(label))+'" '+attributes;
+  if(label.endsWith('~')) return '<textarea'+a+'>'+escape(value??'')+'</textarea>';
+  if(label.endsWith('@')||label.endsWith('%')) {
+    const choices=label.endsWith('@')?['',...stats]:erGroups;
+    return '<select'+a+'>'+choices.map(v=>'<option value="'+escape(v)+'"'+(v===value?' selected':'')+'>'+escape(v||'—')+'</option>').join('')+'</select>';
+  }
+  return '<input'+a+' type="'+(label.endsWith('#')?'number':'text')+'" value="'+escape(value??'')+'">';
+}
+function erSummary(c,block,rows) {
+  const d=erData(c), r=d.fields['Ressources et progression']??{};
+  if(block==='Ressources et progression') {
+    const le=erNum(r.LE);
+    const xp=c.skills.reduce((sum,s)=>sum+erNum(s[4])*erNum(s[3])**2,0);
+    const spent=Object.values(c.base).reduce((sum,n)=>sum+n,0);
+    return 'PV max '+(c.totals.CON*2+c.totals.FOR)*2
+      +' · Points à dépenser '+(erNum(r['Points d’attribut totaux'])-spent)
+      +' · XP restante '+(erNum(r['XP totale'])+erNum(r['Ajustement XP'])-xp)
+      +' · '+Math.trunc(le/1000)+' CE · '+Math.trunc(le/10)/10+' GE · '+Math.trunc(le/10)+' PE';
+  }
+  if(block==='Rune et Marque des Neuf') {
+    const rune=d.fields[block]??{};
+    return rune.Niveau!=null||rune.Rang!=null?'ER max '+(erNum(rune.Niveau)*5+5+erNum(rune.Rang)*10):'';
+  }
+  if(block==='Équipement') {
+    const hit=i=>rows[i][1]?erNum(r['Bonus de dégâts'])+erNum(rows[i][7])+erNum(rows[9][7]):'—';
+    const armor=rows.slice(0,9).reduce((sum,row)=>sum+(row[1]?erNum(row[7]):0),0);
+    const value=rows.reduce((sum,row)=>sum+(row[1]?erNum(row[10]):0),0)
+      +c.inventory.reduce((sum,item)=>sum+erNum(item.quantity)*erNum(item.unit),0);
+    return 'Dégâts P. '+hit(10)+' · Dégâts S. '+hit(11)+' · Armure '+(armor+c.totals.CON+erNum(r['Bonus d’armure']))+' · Valeur des biens '+value+' LE';
+  }
+  return '';
+}
+function erEquippedSlot(c) {
+  const weapon=c.weapons[c.equipped];
+  return weapon?.slot??(weapon?c.equipped+10:null);
+}
+function erGear(c,slot) {
+  c.armor={};
+  const gear=c.grimoire.gear;
+  for(const row of gear.slice(0,10)) {
+    if(row[1]&&stats.includes(row[5])) c.armor[row[5]]=(c.armor[row[5]]??0)+erNum(row[6]);
+  }
+  c.weapons=gear.slice(10).map((row,i)=>({name:row[1],stat:row[5],bonus:erNum(row[6]),slot:i+10})).filter(w=>w.name);
+  const index=c.weapons.findIndex(w=>w.slot===slot);
+  c.equipped=index<0?null:index;
+}
+const erSlot = key => $('er-extra').querySelector('[data-er-slot="'+key+'"]');
+function erPaintSlot(slot,title,icon,tone,content) {
+  const node=erSlot(slot);
+  const markup='<div class="section-heading"><span class="section-icon '+tone+'" aria-hidden="true">'+icon+'</span><h2>'+escape(title)+'</h2></div>'+content;
+  if (node.erHtml!==markup) { node.innerHTML=markup; node.erHtml=markup; }
+}
+function erRender() {
+  const c=state.characters[0], d=erData(c);
+  const fields=(block,labels,racial=false)=>'<div class="er-fields">'+labels.map(label=>{
+    const key=erLabel(label), value=racial?c.racial[key]:d.fields[block]?.[key];
+    return '<label>'+escape(key)+erControl(label,value,'data-er-field="'+escape(key)+'"'+(racial?' data-er-racial':''))+'</label>';
+  }).join('')+'</div>';
+  const rowControl=(label,value,i,j)=>erControl(label,value,'data-er-row="'+i+'" data-er-col="'+j+'"');
+  const table=(block,columns,entries,extra=[])=>{
+    const labels=erTables[block];
+    return '<div class="er-table"><table><thead><tr>'+columns.map(j=>'<th scope="col">'+escape(erLabel(labels[j]))+'</th>').join('')
+      +extra.map(([label])=>'<th scope="col">'+escape(label)+'</th>').join('')+'</tr></thead><tbody>'
+      +entries.map(([i,row])=>'<tr>'+columns.map(j=>'<td>'+(block==='Équipement'&&j===0?escape(row[0])
+        :rowControl(labels[j],row[j],i,j))+'</td>').join('')
+        +extra.map(([,cell])=>'<td>'+cell(i,row)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+  };
+  const entries=block=>erRows(c,block).map((row,i)=>[i,row]);
+  const remove=['Actions',i=>'<button type="button" data-er-remove="'+i+'" aria-label="Supprimer la ligne">×</button>'];
+  const add='<button type="button" data-er-add>Ajouter une ligne</button>';
+  const commonTable=(block,cols)=>table(block,cols,entries(block),[remove])+add;
+  const note=value=>value?'<p class="er-summary">'+escape(value)+'</p>':'';
+  const resource='Ressources et progression', rune='Rune et Marque des Neuf', race='Capacités raciales';
+  const resources=d.fields[resource]??{}, le=erNum(resources.LE);
+  const spent=Object.values(c.base).reduce((sum,n)=>sum+n,0);
+  const xpCost=c.skills.reduce((sum,s)=>sum+erNum(s[4])*erNum(s[3])**2,0);
+  const remaining=erNum(resources['XP totale'])+erNum(resources['Ajustement XP'])-xpCost;
+  const gear=erRows(c,'Équipement');
+  const [defense,assets]=erSummary(c,'Équipement',gear).split(' · Valeur des biens ');
+  const equipped=erEquippedSlot(c);
+  const weaponSelect='<label>Arme équipée <select data-er-weapon><option value="">Aucune</option>'
+    +[10,11].filter(i=>gear[i][1]).map(i=>'<option value="'+i+'"'+(i===equipped?' selected':'')+'>'+escape(gear[i][1])+'</option>').join('')+'</select></label>';
+  erPaintSlot('identity','Identité','✧','violet',fields('Identité',erFields['Identité'])+'<button type="button" data-field="detail">Modifier la présentation</button>');
+  erPaintSlot('history','Historique','◇','gold',commonTable('Historique',[0,1,2]));
+  erPaintSlot('rune','Rune','✦','violet',fields(rune,['Niveau#','Élément','Type','Rang#','ER actuels#'])+note(erSummary(c,rune,[])));
+  erPaintSlot('effects','Effets de rune','✧','violet',commonTable(rune,[0,1,2,3]));
+  erPaintSlot('money','Monnaie et jetons','◇','gold',fields(resource,['LE#'])
+    +note(Math.trunc(le/1000)+' CE · '+Math.trunc(le/10)/10+' GE · '+Math.trunc(le/10)+' PE'));
+  erPaintSlot('xp','XP et PA','✺','teal',fields(resource,['XP totale#','Ajustement XP#','PA#']));
+  erPaintSlot('combat','PV, dégâts et armure','◈','rose',fields(resource,['PV actuels#','Bonus de dégâts#','Bonus d’armure#'])
+    +note('PV max '+(c.totals.CON*2+c.totals.FOR)*2+' · '+defense));
+  erPaintSlot('mark','Marque des Neuf','✦','violet',fields(rune,['Marque des Neuf~']));
+  erPaintSlot('gear','Équipement','⚔','rose',weaponSelect+table('Équipement',[0,1,3,4,5,6,7,8,9],entries('Équipement')));
+  erPaintSlot('racial-skill','Compétence raciale','✧','violet',fields(race,['Compétence raciale~']));
+  erPaintSlot('racial-abilities','Capacités raciales','✺','teal',commonTable(race,[0,1,2]));
+  erPaintSlot('attribute-data','Points et bonus raciaux','◈','gold',fields(resource,['Points d’attribut totaux#'])
+    +note('Points à dépenser '+(erNum(resources['Points d’attribut totaux'])-spent))+fields(race,stats.map(stat=>stat+'#'),true));
+  const openSkills=new Set([...erSlot('skills').querySelectorAll('details[open]')].map(el=>el.dataset.erSkill));
+  const groups=erGroups.map(category=>{
+    const skills=entries('Compétences').filter(([,row])=>(erGroups.includes(row[5])?row[5]:erGroups[0])===category);
+    const cards=skills.map(([i,row])=>{
+      const [name,a,b,rank,cost]=row;
+      const bonus=stat=>stat+' '+(c.totals[stat]??0)*(erNum(rank)+1);
+      return '<details class="er-skill-row" data-er-skill="'+i+'"'+(openSkills.has(String(i))?' open':'')+'><summary>'+escape(name||'Compétence sans nom')
+        +'<span>'+escape('Rang '+rank+' · '+erNum(cost)*erNum(rank)**2+' XP')+'</span><span>'+escape(bonus(a)+' · '+bonus(b))+'</span></summary>'
+        +'<div class="er-fields">'+erTables['Compétences'].map((label,j)=>'<label>'+escape(erLabel(label))+rowControl(label,row[j],i,j)+'</label>').join('')+'</div></details>';
+    }).join('');
+    return '<section class="er-skill-group"><h3>'+escape(category)+'</h3>'+(cards||'<p class="er-empty">Aucune compétence inscrite.</p>')
+      +'<button type="button" data-er-add data-er-group="'+escape(category)+'">Ajouter</button></section>';
+  });
+  erPaintSlot('skills','Compétences','✺','teal',note('XP restante '+remaining)+'<div class="er-skills">'+groups.join('')+'</div>');
+  erPaintSlot('assets','Équipement et valeur des biens','◇','gold',table('Équipement',[0,1,2,9,10],entries('Équipement'))+note('Valeur des biens '+assets));
+  erPaintSlot('inventory','Inventaire','◇','gold',table('Inventaire',[0,1,2,3,4,5,6],entries('Inventaire'),
+    [['Prix total',(_i,row)=>String(erNum(row[5])*erNum(row[6]))],remove])+add);
+}
+function erSave(update) {
+  try {
+    showError('');
+    const next=structuredClone(campaign), c=next.characters[0];
+    c.grimoire=erData(c);
+    update(c,c.grimoire);
+    localStorage.setItem(saveKey,JSON.stringify(next));
+    campaign=next;
+    refreshView();
+  } catch(error) {
+    for(const panel of $('er-extra').querySelectorAll('[data-block]')) panel.erHtml=null;
+    erRender();
+    showError(error.message);
+  }
+}
+const erHost=$('er-extra');
+erSlot('attributes').append($('stats').closest('section'));
+$('skills').closest('section').hidden=true;
+const erPortrait=$('portrait-button');
+const erPortraitHome=document.createComment('portrait');
+erPortrait.before(erPortraitHome);
+const erSetView=setView;
+setView=function(view) {
+  erSetView(view);
+  if (view==='grimoire') erSlot('portrait').append(erPortrait);
+  else erPortraitHome.after(erPortrait);
+};
+erSlot('portrait').append(erPortrait);
+erHost.addEventListener('change',({target:t})=>{
+  const block=t.closest('[data-block]')?.dataset.block;
+  if (!block) return;
+  const value=t.type==='number'?(t.value===''?null:t.valueAsNumber):t.value;
+  const {erField,erRow,erCol}=t.dataset;
+  if (!('erWeapon' in t.dataset)&&!erField&&erRow===undefined) return;
+  erSave((c,d)=>{
+    if('erWeapon' in t.dataset) { erGear(c,value===''?null:Number(value)); return; }
+    if(erField) {
+      if('erRacial' in t.dataset) c.racial[erField]=erNum(value);
+      else {
+        const f=d.fields[block]??={};
+        f[erField]=value;
+        if(block==='Identité'&&['Nom','Prénom'].includes(erField)) c.name=[f['Prénom'],f.Nom].filter(Boolean).join(' ').trim();
+      }
+      return;
+    }
+    const i=Number(erRow), j=Number(erCol);
+    if(block==='Équipement') {
+      const slot=erEquippedSlot(c);
+      d.gear[i][j]=value;
+      erGear(c,slot??(i===10&&j===1?10:null));
+    } else if(block==='Inventaire') c.inventory[i][erInventory[j]]=value;
+    else if(block==='Compétences') {
+      if((j===1||j===2)&&!stats.includes(value)) throw new Error('Choisis une caractéristique.');
+      c.skills[i][j]=j===3?Math.max(0,Math.min(7,Math.trunc(erNum(value)))):value;
+    } else d.rows[block][i][j]=value;
+  });
+});
+erHost.addEventListener('click',event=>{
+  const button=event.target.closest('[data-er-add],[data-er-remove]');
+  if(!button) return;
+  const block=button.closest('[data-block]').dataset.block;
+  erSave((c,d)=>{
+    const rows=block==='Inventaire'?c.inventory:block==='Compétences'?c.skills:(d.rows[block]??=[]);
+    if('erAdd' in button.dataset) {
+      if(block==='Inventaire') rows.push({name:'',quantity:1});
+      else if(block==='Compétences') rows.push(['Nouvelle compétence','FOR','DEX',0,0,button.dataset.erGroup??erGroups[0]]);
+      else rows.push([]);
+    } else rows.splice(Number(button.dataset.erRemove),1);
+  });
+});
+function erSeedSkills(c) {
+  if (c.erSkillCatalogVersion === 1) return;
+  c.erSkillCatalogVersion = 1;
+  const known=new Map(erCatalog.map(row=>[row[0],row]));
+  for(const skill of c.skills) {
+    const ref=known.get(skill[0]);
+    if(ref&&skill.length<5) {
+      skill[1]=ref[1];
+      skill[2]=ref[2];
+      skill[4]=ref[4];
+      skill[5]=ref[5];
+    }
+    known.delete(skill[0]);
+  }
+  c.skills.push(...[...known.values()].map(row=>row.slice()));
+}
+const erOriginalRender=render;
+render=function(){ erOriginalRender(); erRender(); };
+const erOriginalRefresh=refreshView;
+refreshView=function(){ erSeedSkills(campaign.characters[0]); erOriginalRefresh(); };
+
+startLocal();
+
+  </script>
+</body>
+</html>

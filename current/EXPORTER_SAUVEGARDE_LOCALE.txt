@@ -1,0 +1,18 @@
+OUVRE L'ANCIEN FICHIER HTML V14.2, PUIS F12 > CONSOLE.
+COLLE CE SCRIPT DANS LA CONSOLE POUR EXPORTER LA FICHE EXISTANTE :
+
+(() => {
+  const raw = localStorage.getItem('ethereal-realms:fiche-locale:v1');
+  if (!raw) { alert('Aucune sauvegarde de fiche locale trouvée dans ce navigateur.'); return; }
+  try { const data = JSON.parse(raw); if (!Array.isArray(data.characters)) throw new Error('Contenu invalide'); }
+  catch (error) { alert('La sauvegarde locale semble illisible : ' + error.message); return; }
+  const url = URL.createObjectURL(new Blob([raw], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'Ethereal-Realms-Ancienne-Fiche.json';
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+})();
+
+PUIS DANS V15 : "COMPTE & CAMPAGNES" > "IMPORTER UNE SAUVEGARDE JSON".
+L'IMPORT CRÉERA UNE NOUVELLE CAMPAGNE, SANS ÉCRASER LES DONNÉES EXISTANTES.

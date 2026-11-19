@@ -1,0 +1,8 @@
+/* Carte d’Eardan — récupération autonome depuis Eardan-Atlas. */
+#eardan-map{display:block;margin:5px;min-width:0;}
+#eardan-map[hidden]{display:none!important;}
+#eardan-map .er-map-heading{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;gap:12px;background:#fffaf1;border:1px solid #dccbb2;border-radius:9px 9px 0 0;}
+#eardan-map .er-map-heading h2{font:700 20px var(--er-fantasy-font,Georgia,serif);color:#533955;margin:0;}
+#eardan-map .er-map-heading p{color:#75687b;font-size:11px;line-height:1.3;margin:0;}
+#eardan-map iframe{display:block;width:100%;height:clamp(580px,calc(100dvh - 128px),1250px);border:1px solid #dccbb2;border-top:0;border-radius:0 0 9px 9px;background:#e4d5b7;}
+@media(max-width:900px){#eardan-map iframe{height:calc(100dvh - 176px);min-height:470px}#eardan-map .er-map-heading{align-items:start;flex-direction:column}}
