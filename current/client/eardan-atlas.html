@@ -1,0 +1,546 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#28231d"><title>Eardan — Atlas</title>
+<style>
+:root{color-scheme:dark;--ink:#14252a;--deep:#0e1a1e;--line:#34484a;--sand:#e6cf9e;--light:#f3e8cf;--muted:#bac9c3}
+*{box-sizing:border-box}body{margin:0;height:100dvh;background:var(--deep);color:var(--light);font:15px/1.45 system-ui,sans-serif;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}header{display:flex;align-items:center;gap:24px;padding:12px 22px;border-bottom:1px solid var(--line);background:#122126}h1,h2,h3{font-family:Georgia,serif;font-weight:400;margin:0}h1{font-size:33px;color:var(--sand);line-height:1}header .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}button,input{font:inherit}button{background:#1d3135;color:var(--light);border:1px solid #43585a;border-radius:5px;padding:7px 12px;cursor:pointer}button:hover,button:focus-visible{border-color:#e5c58c;background:#2b4143}button[aria-pressed=true]{background:#dfc590;color:#122126;border-color:#dfc590}button:disabled{opacity:.5;cursor:default}.layout{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 285px}.stage{position:relative;min-width:0;min-height:0;background:#0a191f}.stage>svg{width:100%;height:100%;display:block;touch-action:none;cursor:grab}.stage>svg.drag{cursor:grabbing}.zoom{position:absolute;bottom:14px;left:14px;display:flex;gap:5px;align-items:center;padding:5px;background:#0e1a1eeb;border:1px solid #43585a;border-radius:6px}.zoom button{width:36px;padding:3px 0;font-size:20px}.zoom output{width:53px;text-align:center;color:var(--sand);font-variant-numeric:tabular-nums}.hint{position:absolute;right:14px;bottom:14px;font-size:12px;background:#0e1a1ee8;padding:6px 10px;border-radius:4px;color:var(--muted);pointer-events:none}aside{min-height:0;overflow:auto;border-left:1px solid var(--line);padding:17px 16px 20px;background:#142429}aside section+section,aside details{margin-top:17px;border-top:1px solid var(--line);padding-top:14px}h2{font-size:23px;color:var(--sand);margin-bottom:8px}h3{font-size:18px;color:var(--sand);margin:0 0 7px}p{margin:0 0 8px}.muted{color:var(--muted);font-size:13px}.view-controls,.layers{display:flex;gap:6px;flex-wrap:wrap}.view-controls button{font-size:12px;padding:6px 8px}.layers label{font-size:13px;display:flex;align-items:center;gap:3px;white-space:nowrap}input[type=checkbox]{accent-color:#dbbe84}input[type=search]{width:100%;border:1px solid #43585a;border-radius:4px;background:#0e1a1e;padding:8px 10px;color:var(--light)}#results{display:grid;gap:4px;margin-top:5px;max-height:184px;overflow:auto}#results:empty{display:none}#results button{text-align:left;padding:5px 8px;font-size:13px}#results small{display:block;color:var(--muted)}summary{cursor:pointer;color:var(--sand)}summary+div{margin-top:9px}.row{display:flex;gap:7px;align-items:center;margin:4px 0;color:var(--muted);font-size:13px}.swatch{display:inline-block;width:10px;height:10px;flex:none;border-radius:2px}.legend-icon{width:17px;height:17px;flex:none}.meta{color:var(--muted);font-size:12px}.badge{display:inline-block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#f5d69c;margin:0 0 5px}.local-button{font-size:12px;margin-top:3px}#exportStatus{align-self:center;font-size:12px;color:var(--muted)}.toggle-side{display:none}
+@media(max-width:760px){header{gap:8px;padding:8px 10px}h1{font-size:25px}header button{font-size:12px;padding:6px} .layout{grid-template-columns:1fr}aside{position:absolute;z-index:4;top:48px;bottom:0;right:0;width:min(290px,90vw);display:none;box-shadow:-8px 0 28px #0008}aside.open{display:block}.toggle-side{display:inline-block}.hint{display:none}#exportStatus{display:none}}
+
+:root{color-scheme:light;--ink:#392c20;--deep:#26221b;--line:#b8a27d;--sand:#ead9ad;--light:#3d2e20;--muted:#655544}
+body{background:#252019}
+header{background:#2c251d;border-color:#574734;color:#f1e0bb}
+header h1{font-style:italic;letter-spacing:.025em}
+header button,.zoom button{background:#3a3024;color:#f3e5c9;border-color:#756048}
+header button:hover,.zoom button:hover{background:#564330;border-color:#c5a472}
+aside{background:linear-gradient(120deg,#eee1c3,#dfccaa);border-left:1px solid #987c55;color:#3b2e21;box-shadow:inset 3px 0 12px #7e623323}
+aside h2,aside h3,summary{color:#663d29}
+aside button{color:#503724;background:#ebdbb9;border-color:#b8a17a}
+aside button:hover,aside button:focus-visible{color:#3b2e21;background:#f3e7cc;border-color:#7a5037}
+aside button[aria-pressed=true]{background:#774936;border-color:#774936;color:#fff1d2}
+aside input[type=search]{background:#f8ebd1;border-color:#b8a17a;color:#392c20}
+aside input[type=checkbox]{accent-color:#774936}
+aside .badge{color:#86462d}
+aside .meta,aside .muted,aside .row,#results small{color:#655544}
+.stage{background:#28231c}
+.zoom,.hint{color:#f3e5c9;background:#2c251eeb;border-color:#826a4b}
+#exportStatus{color:#dfc9a0}
+</style></head><body>
+<header><h1>Eardan</h1><div class="actions"><span id="exportStatus" role="status"></span><button id="export">Télécharger le PNG 2K</button><button id="reset">Vue du monde</button><button class="toggle-side" id="toggleSide" aria-controls="sidebar" aria-expanded="false">Légende</button></div></header>
+<div class="layout"><main class="stage"><svg id="map" xmlns="http://www.w3.org/2000/svg" width="2048" height="1536" viewBox="0 0 2048 1536" tabindex="0" aria-label="Atlas interactif d’Eardan"></svg><div class="zoom"><button id="out" aria-label="Dézoomer">−</button><output id="zoomValue">1×</output><button id="in" aria-label="Zoomer">+</button></div><div class="hint">Molette pour zoomer · Glisser pour déplacer</div></main>
+<aside id="sidebar"><section><h2>Explorer l’atlas</h2><input type="search" id="search" placeholder="Chercher un lieu…" aria-label="Chercher un lieu" autocomplete="off"><div id="results"></div></section>
+<section><h3>Vue</h3><div class="view-controls"><button data-mode="terrain" aria-pressed="true">Relief</button><button data-mode="nations" aria-pressed="false">Nations</button><button data-mode="factions" aria-pressed="false">Factions</button></div><div class="layers" style="margin-top:9px"><label><input id="hydroToggle" type="checkbox" checked> Eaux</label><label><input id="extraToggle" type="checkbox" checked> Nouveaux lieux</label></div></section>
+<section id="selection" aria-live="polite"><h3>Sur la carte</h3><p class="muted">Clique sur un lieu pour ouvrir sa fiche. Les plans des villes se dessinent à partir de 12×.</p></section>
+<details open><summary>Légende</summary><div id="legend"></div></details>
+<details><summary>Sources et conventions</summary><div class="meta">
+<p><strong>Géographie.</strong> Les côtes ont été retracées d’après les trois cartes. Les variantes de tracé suivent la carte complète, dont les îles d’Orlanopolis et des Quinque. La vue Nations reprend les appartenances, avec Solaria figurée au sein de l’aire lunarienne. Les frontières intérieures sont interprétées au tracé.</p>
+<p><strong>Repères.</strong> Les noms et positions de la carte complète sont privilégiés. Minelya, la position alternative de Nemellaya et le libellé Haruli/Daruli figurent dans les fiches concernées. L’échelle de référence est celle de Nations et Factions (2 000 km par barre, contre 10 000 sur la carte complète).</p>
+<p><strong>Ajouts.</strong> Cours d’eau, sites marqués d’un point ocre et plans urbains sont des propositions. Les plans sont schématiques, à une échelle locale indicative.</p>
+<p><strong>Factions.</strong> La vue Factions rattache les noms de la légende à leurs repères visibles. Les pastilles numérotées renvoient aux implantations.</p>
+</div></details></aside></div>
+<script>
+const land = {
+kry:"164,514 193,487 200,464 219,465 205,435 181,410 193,380 192,350 202,319 203,306 191,283 210,265 227,259 219,246 240,235 258,220 269,181 287,176 316,163 324,128 336,112 354,124 376,129 399,145 452,147 490,144 510,132 528,105 548,93 579,97 617,111 643,126 663,151 692,176 711,202 703,223 696,226 700,249 688,262 661,264 642,251 630,257 617,274 607,267 605,252 584,263 557,270 555,255 530,248 516,252 501,265 475,277 450,285 434,300 437,320 417,326 405,315 399,331 416,341 437,346 419,354 407,375 420,389 425,411 419,423 432,442 452,465 453,482 442,505 425,522 421,554 411,572 407,590 384,582 361,568 334,556 311,537 288,515 269,493 257,494 253,519 263,532 245,535 227,525 213,539 168,543",
+nes:"609,360 620,343 628,324 647,310 660,324 663,339 683,341 697,354 713,379 704,395 714,413 709,429 724,437 714,450 711,468 691,481 688,489 670,484 656,475 650,461 645,441 634,433 641,414 629,405 629,387 615,378",
+ele:"765,374 778,367 789,379 819,379 842,374 867,357 885,342 917,338 935,345 943,360 953,372 949,391 966,406 969,429 979,437 983,454 975,465 974,488 959,486 941,468 930,470 918,485 895,491 868,489 853,500 836,501 830,487 806,486 799,468 805,456 793,449 778,461 764,452 767,435 777,420 770,400",
+lern:"772,583 785,557 811,547 829,532 850,538 866,531 872,519 865,511 871,502 883,509 881,523 872,539 874,551 866,575 849,583 836,596 824,591 815,604 798,606 787,619 782,602 771,599",
+east:"1003,191 1016,175 1012,157 1030,140 1053,139 1077,121 1089,132 1099,157 1113,167 1134,166 1152,153 1170,138 1182,119 1203,117 1232,125 1264,116 1290,117 1312,126 1320,148 1344,152 1359,167 1381,174 1401,193 1398,214 1381,236 1389,253 1403,234 1434,235 1456,242 1474,249 1487,262 1486,276 1459,287 1451,302 1457,315 1440,324 1445,343 1460,354 1468,368 1493,391 1520,377 1547,375 1572,363 1588,343 1607,337 1630,324 1645,305 1650,277 1658,252 1666,231 1668,196 1678,172 1698,156 1721,158 1753,174 1770,158 1798,161 1824,171 1833,197 1831,227 1839,256 1847,281 1853,307 1846,327 1833,344 1834,362 1844,378 1847,402 1838,424 1837,453 1833,479 1836,507 1841,525 1825,536 1825,554 1844,578 1828,589 1807,581 1802,611 1786,623 1761,621 1741,629 1714,623 1693,610 1677,611 1672,589 1689,570 1676,554 1676,532 1661,512 1634,509 1614,500 1594,510 1570,508 1552,519 1522,534 1502,526 1499,507 1490,486 1472,470 1453,469 1438,481 1417,492 1399,513 1381,531 1362,545 1335,554 1325,566 1307,562 1297,540 1272,534 1247,520 1234,499 1228,474 1219,466 1223,452 1206,450 1200,425 1188,412 1184,389 1194,378 1215,373 1227,362 1227,350 1214,338 1199,343 1184,356 1173,334 1157,328 1150,320 1130,320 1129,301 1105,299 1087,289 1073,274 1050,269 1045,253 1055,235 1035,225 1019,226 1008,211",
+west:"409,700 423,685 430,675 454,669 470,654 493,648 510,640 531,638 544,629 574,628 586,618 614,632 639,641 662,650 682,659 692,678 696,706 717,718 744,737 749,756 746,775 762,782 783,783 793,803 800,822 821,825 842,831 854,839 873,856 883,874 909,882 913,906 924,926 938,952 936,966 916,966 908,984 891,1006 888,1033 875,1051 873,1078 883,1103 910,1096 910,1117 922,1137 933,1161 937,1188 948,1205 964,1204 978,1181 998,1174 1023,1163 1039,1173 1048,1193 1045,1212 1069,1223 1089,1235 1103,1239 1130,1235 1146,1242 1167,1227 1192,1229 1214,1222 1223,1238 1245,1248 1256,1273 1265,1294 1260,1313 1276,1341 1277,1355 1256,1359 1245,1377 1221,1391 1201,1391 1196,1412 1203,1433 1184,1440 1159,1436 1139,1437 1111,1448 1103,1429 1086,1422 1077,1407 1091,1399 1110,1408 1130,1406 1135,1396 1118,1384 1097,1375 1081,1354 1063,1331 1052,1307 1041,1290 1027,1268 1022,1243 1028,1232 1014,1219 1000,1236 989,1253 967,1267 943,1269 914,1275 885,1269 861,1258 837,1265 825,1277 806,1268 788,1273 781,1263 768,1273 749,1264 735,1245 725,1260 740,1275 748,1288 728,1290 714,1282 694,1286 676,1278 658,1277 641,1262 624,1243 624,1222 635,1202 644,1197 652,1180 649,1160 667,1161 681,1170 690,1188 696,1205 714,1195 716,1176 701,1160 698,1141 682,1128 685,1102 676,1082 678,1065 672,1046 696,1037 704,1025 735,1027 757,1020 770,1008 763,996 739,996 713,988 698,992 691,1013 678,1008 669,988 655,974 635,978 631,959 640,939 633,918 622,899 622,873 614,853 599,844 582,845 571,830 550,825 529,822 513,816 490,809 467,813 450,803 434,794 425,775 418,755 429,744 412,732",
+er:"1001,747 1014,734 1033,726 1046,709 1075,695 1081,682 1078,660 1095,647 1113,649 1131,656 1151,657 1166,668 1179,662 1173,648 1156,641 1161,631 1181,637 1200,631 1228,629 1244,617 1258,598 1272,591 1287,603 1316,600 1334,594 1346,602 1348,628 1353,647 1347,672 1360,684 1379,690 1397,695 1418,694 1431,699 1449,683 1463,689 1475,705 1495,699 1518,690 1531,679 1526,657 1530,641 1543,640 1556,650 1567,655 1581,675 1599,691 1618,700 1628,724 1630,743 1641,764 1660,780 1680,782 1697,793 1716,786 1724,769 1735,750 1738,733 1730,712 1735,692 1756,678 1774,674 1770,657 1780,656 1790,672 1807,677 1830,676 1848,692 1842,712 1831,721 1819,738 1801,747 1817,755 1807,770 1794,779 1787,799 1776,824 1760,835 1742,835 1718,824 1708,844 1687,847 1676,861 1653,869 1638,894 1621,909 1598,915 1576,916 1555,926 1540,931 1518,949 1503,957 1492,973 1471,979 1455,994 1435,991 1431,1009 1448,1024 1443,1034 1426,1038 1436,1057 1426,1072 1412,1076 1395,1073 1383,1090 1368,1101 1360,1122 1349,1136 1324,1145 1316,1133 1316,1116 1305,1109 1302,1093 1288,1082 1278,1088 1271,1075 1258,1079 1250,1059 1259,1036 1263,1012 1277,990 1274,972 1284,961 1290,941 1280,922 1271,906 1255,886 1240,881 1223,868 1211,869 1202,882 1181,883 1173,897 1153,899 1129,894 1125,883 1103,879 1096,866 1079,873 1066,869 1058,859 1036,865 1025,851 1006,849 1004,831 1011,811 1009,796 1014,783 1003,766",
+nor:"184,1180 200,1170 227,1165 250,1157 267,1147 286,1159 304,1175 315,1190 339,1204 364,1225 377,1237 370,1251 378,1265 392,1254 409,1250 432,1234 452,1230 467,1220 487,1229 502,1241 524,1233 543,1241 559,1243 575,1254 587,1270 588,1283 604,1292 621,1280 634,1294 629,1311 632,1330 617,1348 599,1357 578,1354 562,1361 538,1354 521,1366 508,1366 490,1387 468,1400 452,1396 443,1384 442,1371 427,1366 407,1372 394,1363 376,1368 360,1358 335,1356 311,1343 304,1323 290,1311 274,1320 256,1330 241,1322 228,1307 223,1287 225,1270 220,1252 208,1231 197,1212 184,1197",
+dio:"1514,1111 1525,1098 1542,1104 1558,1117 1562,1134 1577,1151 1582,1176 1598,1199 1602,1217 1616,1212 1626,1199 1622,1184 1602,1175 1597,1163 1617,1153 1626,1134 1647,1126 1662,1108 1677,1102 1680,1083 1694,1089 1708,1102 1720,1107 1733,1127 1757,1128 1770,1141 1791,1148 1803,1166 1812,1193 1828,1213 1846,1224 1862,1239 1876,1234 1894,1245 1903,1263 1914,1277 1918,1292 1930,1305 1913,1323 1892,1331 1882,1349 1863,1355 1854,1372 1854,1391 1844,1410 1825,1409 1808,1401 1787,1398 1763,1386 1746,1381 1728,1386 1703,1384 1683,1388 1658,1382 1637,1375 1622,1360 1601,1360 1585,1344 1576,1326 1578,1307 1570,1286 1576,1274 1566,1253 1553,1239 1541,1220 1532,1200 1527,1176 1514,1158 1518,1144 1528,1131",
+say:"220,973 234,963 237,948 246,943 251,924 263,920 265,911 277,912 286,903 296,906 297,919 305,927 292,933 299,943 289,952 299,960 290,975 281,983 278,996 263,1005 248,1016 239,1010 240,998 228,994",
+lam:"1284,1378 1297,1371 1317,1374 1330,1372 1349,1364 1363,1369 1380,1367 1388,1381 1386,1399 1395,1413 1390,1433 1379,1446 1379,1465 1375,1476 1358,1471 1341,1463 1326,1454 1314,1436 1303,1427 1299,1408 1290,1396",
+orl:"943,1064 949,1053 949,1040 960,1038 967,1048 975,1047 980,1059 985,1067 973,1077 956,1074 947,1076",
+isle:"243,711 250,697 257,692 266,698 272,711 268,724 261,732 260,748 253,750 247,736 241,729",
+quin:"905,662 911,658 920,659 922,669 917,678 920,688 915,696 909,687 907,678 901,673",
+};
+const islands=[[728,348,7,5],[742,440,10,7],[731,449,6,4],[800,505,6,5],[316,798,4,4],[910,650,4,3],[944,672,5,4],[915,725,5,4],[922,705,4,3],[1510,574,5,4],[1760,147,4,4],[1857,875,10,7],[1298,1138,5,4],[1248,1145,18,23],[1223,1118,5,4],[928,1387,8,6],[978,1411,8,6],[826,1295,5,5],[677,1137,5,6],[666,1151,4,5],[650,1167,4,4],[603,1272,4,4],[634,1280,4,4]];
+const lakes=[
+"1159,705 1171,696 1195,705 1200,716 1210,724 1213,737 1233,744 1238,756 1228,771 1217,774 1210,791 1198,786 1196,771 1202,758 1189,752 1182,736 1172,735 1174,719 1163,716",
+"1738,558 1752,551 1760,561 1770,561 1773,578 1766,591 1755,599 1743,594 1738,581 1729,577",
+"544,1261 553,1266 551,1277 561,1285 570,1281 581,1284 580,1295 569,1304 562,1313 548,1317 543,1308 547,1298 542,1289",
+"1442,254 1449,251 1454,261 1452,273 1445,271 1439,266","338,290 343,287 350,290 348,296 341,297","1854,1323 1861,1322 1868,1328 1863,1332 1857,1330"
+];
+
+const places = [
+[547,136,"Tal’Anahelia","city","Krytea"],[285,203,"Ashehys","city","Krytea","Hakkeshu"],
+[654,383,"Shan Rao","city","Nescya",""],[665,407,"Kusanagi","city","Nescya"],
+[881,400,"Stanton","city","Elenil","","Minelya sur la carte des nations. Le repère est légèrement décalé entre les deux cartes."],
+[842,564,"Vulperia","city","Lern"],[1337,318,"Tenryû","city","Lunaria"],[1232,342,"Shizawa","city","Lunaria","Trèfle Doré"],
+[1458,310,"Bihan","port","Lunaria","Lin Kuei"],[1759,247,"Fenrelyne","city","Radiant"],
+[519,646,"Gamorah","city","Flayme"],[728,861,"Silvercrest","city","Orlond","Antarès"],
+[914,675,"DeathCrown","city","Archipel des Quinque","Léviathan"],[1226,683,"Khemkheta","city","Erelden","Azaan"],
+[1577,779,"Kyn’ Serin","city","Erelden"],[1296,969,"Sarpan","city","Erelden","Valkyries"],
+[1761,785,"La Citadelle Noire","fort","Oscalan"],[261,1002,"Madikera","port","Sayleen"],
+[963,1058,"Orlanopolis","city","Orlond","","Île sur les cartes physiques, rattachée à Orlond sur la carte politique."],
+[651,1219,"Orves","port","Orlond","Lune Sanglante"],[297,1175,"Jethro","city","Norah"],
+[484,1285,"Kagura","city","Norah","Succubes"],[464,1383,"Citadelle de Glace","fort","Norah","Banshees"],
+[1790,1182,"Nemellaya","city","Dione","","La carte des nations place le repère plus à l’ouest, près de 1722,1182."],
+[1355,1445,"Haruli","city","Lamirula","","Le petit libellé de la carte des factions semble indiquer « Daruli »."],
+];
+const extras=[
+[368,182,"Sanctuaire des Neiges","temple","Krytea"],[304,349,"Ruines du Cerf Blanc","ruin","Krytea"],[421,482,"Relais du cap des Brumes","fort","Krytea"],[237,515,"Havre d’Aubecôte","port","Krytea"],
+[646,353,"Porte des Pins Rouges","temple","Nescya"],[682,459,"Tour du Détroit","fort","Nescya"],[799,416,"Abbaye des Saules","temple","Elenil"],[954,451,"Quai des Vents","port","Elenil"],[808,583,"Vestiges de Grise-Anse","ruin","Lern"],
+[1105,221,"Refuge du Col Blanc","fort","Lunaria"],[1180,291,"Sanctuaire des Cèdres","temple","Lunaria"],[1311,276,"Observatoire des Hautes-Lunes","temple","Lunaria"],[1363,502,"Tour du défilé","fort","Lunaria"],
+[1737,200,"Ermitage de l’Aurore","temple","Radiant"],[1783,273,"Tour des Frimas","fort","Radiant"],
+[1564,457,"Ruines d’Ambrevaux","ruin","Solaria"],[1707,531,"Temple des Sources Claires","temple","Solaria"],[1801,601,"Havre de la Merlette","port","Solaria"],
+[480,714,"Vestiges de la Fournaise","ruin","Flayme"],[656,767,"Relais du Sel","fort","Flayme"],[280,942,"Sanctuaire des Alizés","temple","Sayleen"],
+[915,702,"Tour des Brisants","ruin","Archipel des Quinque"],[784,944,"Pont des Trois Arches","bridge","Orlond"],[816,1104,"Prieuré des Aulnes","temple","Orlond"],[755,1245,"Tour de la Passe","fort","Orlond"],[1170,1285,"Ruines de la Vigie","ruin","Orlond"],
+[1115,742,"Monastère des Strates","temple","Erelden"],[1244,854,"Tour du chemin de Craie","fort","Erelden"],[1422,894,"Pont des Eaux Vertes","bridge","Erelden"],[1360,1055,"Sanctuaire de l’Estuaire","temple","Erelden"],[1786,717,"Vigie d’Oscalan","fort","Oscalan"],
+[245,1225,"Tour de la Dent Creuse","ruin","Norah"],[366,1288,"Chapelle des Écorces","temple","Norah"],[569,1337,"Ruines de la Lisière","ruin","Norah"],
+[1545,1131,"Vigie du Bras Occidental","fort","Dione"],[1652,1188,"Temple des Sources Hautes","temple","Dione"],[1768,1304,"Vestiges des Neiges Basses","ruin","Dione"],[1323,1394,"Sanctuaire du Vent du Sud","temple","Lamirula"],
+];
+const regions=[
+["Krytea",320,268,"#6b8d4d","Krytaens"],["Nescya",657,474,"#46a79d","KynRas"],["Elenil",880,466,"#599bba","Elindaes"],["Lern",907,587,"#bcb297","Mushis"],["Lunaria",1329,420,"#d6ab52","Lunariens"],["Radiant",1752,201,"#d7e2d7","Fenris"],["Solaria",1732,511,"#d6ab52","Lunariens · région de Solaria"],["Flayme",527,768,"#d9864d","Gaorens"],["Archipel des Quinque",944,716,"#9eb2a0",""],["Sayleen",308,966,"#d7b28c","Askars"],["Orlond",801,1165,"#c97055","Orlans"],["Erelden",1401,837,"#8281ae","Ereldiens"],["Oscalan",1784,708,"#8f936b","Rohkans"],["Norah",394,1321,"#a47bb4","Keltans"],["Dione",1674,1283,"#c88ba7","Alerydes"],["Lamirula",1456,1408,"#9893ad","Kilyns"],
+];
+const rivers = [
+["M349 156 Q329 184 344 220 T327 281 Q307 309 311 337 T293 386 Q272 402 257 429 T217 451 L211 455",2.7],["M397 181 Q385 203 377 218 T369 251 Q353 269 341 294 M377 218 Q358 218 344 220",1.2],["M612 173 Q581 183 570 210 T534 241 L529 248 M665 191 Q648 202 648 223 T631 256 M398 469 Q375 469 363 489 T323 501 Q296 503 269 493",2],
+["M650 352 Q669 367 660 388 T665 415 Q672 434 699 443 L717 438",1.65],["M895 365 Q876 389 863 398 T848 434 Q842 448 855 467 T850 496 M925 387 Q902 410 878 414 T848 434",2],["M863 546 Q839 553 825 572 T795 600",1.2],
+["M1054 159 Q1070 182 1091 192 T1123 225 Q1139 249 1169 257 T1195 294 Q1208 315 1223 331 L1225 348",2.6],["M1200 162 Q1177 177 1177 201 T1157 239 Q1158 251 1169 257 M1269 155 Q1274 195 1256 219 T1247 269 Q1250 291 1239 311 T1223 331",1.8],
+["M1379 376 Q1363 365 1355 347 T1341 314 Q1338 296 1362 283 T1410 282 Q1442 280 1459 286 M1334 256 Q1326 278 1335 294 L1341 314",2.5],["M1404 416 Q1384 425 1364 442 T1321 469 Q1303 487 1300 511 L1296 541 M1414 448 Q1386 464 1371 477 T1339 483 L1315 475",1.75],["M1766 275 Q1748 253 1748 233 T1718 196 Q1702 183 1683 170 M1787 265 Q1804 260 1838 260",1.55],
+["M1618 401 Q1634 426 1664 437 T1691 484 Q1706 505 1728 519 T1747 557 M1774 400 Q1777 423 1754 439 T1745 486 Q1744 509 1728 519 M1757 597 Q1769 608 1774 624",2.5],
+["M612 685 Q590 673 571 674 T537 659 Q528 655 521 642 M553 715 Q531 711 510 718 T463 722 Q435 716 412 731 M606 752 Q627 758 643 778 T694 814 Q715 827 725 858 Q735 886 757 893 T774 933 Q789 954 780 978 T757 1003 L754 1020",2.5],["M850 857 Q825 883 805 884 T757 893 M911 936 Q888 947 867 946 T828 966 Q807 977 780 978",1.55],
+["M859 1109 Q842 1115 821 1125 T779 1149 Q760 1171 738 1179 T709 1193 M842 1204 Q818 1193 794 1197 T749 1192 L738 1179 M988 1197 Q971 1212 945 1225 T902 1269",2.25],["M1183 1260 Q1168 1291 1174 1312 T1154 1367 L1144 1397 M1230 1305 Q1208 1321 1174 1312",1.65],
+["M1302 710 Q1274 705 1257 715 T1227 728 L1214 738 M1119 774 Q1121 752 1138 741 T1150 717 L1159 705 M1198 701 Q1228 676 1230 651 T1256 606",2],["M1211 789 Q1219 809 1199 833 T1170 854 Q1158 874 1154 899",1.7],
+["M1368 759 Q1361 789 1376 811 T1386 853 Q1387 871 1417 887 T1428 937 Q1424 965 1413 994 T1392 1044 Q1377 1071 1353 1084 T1342 1139 M1531 729 Q1513 769 1489 782 T1456 824 Q1448 850 1437 859 T1417 887 M1287 867 Q1309 888 1336 887 T1383 903 Q1409 914 1428 937",2.9],
+["M1598 737 Q1596 765 1574 783 T1562 825 Q1551 849 1557 867 T1542 930 M1773 736 Q1757 751 1763 771 T1750 800 L1742 834",1.75],
+["M246 1198 Q261 1215 269 1234 T297 1254 Q316 1260 326 1275 T322 1329 L322 1349 M454 1241 Q454 1268 475 1287 T487 1320 Q488 1337 475 1358 L464 1394 M572 1270 Q569 1284 562 1290",1.8],
+["M1787 1258 Q1776 1238 1779 1217 T1764 1195 Q1741 1182 1729 1164 T1722 1108 M1754 1259 Q1734 1245 1718 1245 T1681 1219 Q1652 1204 1629 1200 M1858 1268 Q1851 1299 1862 1327 Q1872 1339 1865 1356",2.3],
+["M277 929 Q270 952 260 959 T260 1008 M1341 1400 Q1351 1419 1342 1431 T1352 1470",1.2],
+];
+const ranges=[
+[37,7,"M334 126 Q397 179 466 157 T546 112 Q617 107 683 175"],[31,10,"M315 172 Q371 156 430 186 T548 183 Q610 149 678 209"],[24,14,"M220 317 Q292 279 357 274 T422 290"],[27,17,"M223 475 Q263 469 291 509 T407 549"],[26,13,"M421 440 Q384 455 399 487 T407 555"],[31,10,"M1021 173 Q1074 123 1097 176 T1170 187 Q1214 125 1268 140 T1380 199"],[28,13,"M1066 245 Q1131 287 1182 273 T1256 252 Q1329 229 1364 202"],
+[65,13,"M1320 541 Q1377 507 1418 457 T1522 386 Q1571 369 1638 332 T1837 299"],[57,20,"M1265 490 Q1339 460 1369 409 T1450 390 Q1521 413 1572 420 T1650 382 Q1741 331 1825 379"],[33,11,"M1682 209 Q1720 173 1762 198 T1823 231"],[28,13,"M1705 440 Q1765 425 1827 454"],
+[36,13,"M466 790 Q520 767 553 723 T680 676"],[29,10,"M461 688 Q513 663 551 659 T634 655"],[29,14,"M574 820 Q613 759 656 763 T760 807 Q808 822 864 863"],
+[55,13,"M1020 802 Q1148 825 1226 791 T1308 734 Q1347 684 1331 620"],[40,16,"M1041 844 Q1124 863 1184 846 T1290 803 Q1344 755 1399 719"],[34,13,"M1467 737 Q1512 747 1538 676 T1604 711"],[31,12,"M1490 928 Q1551 890 1618 900 T1712 828"],[19,11,"M1280 1038 Q1320 1040 1352 1104"],
+[33,12,"M664 1200 Q707 1223 769 1201 T896 1226 Q950 1237 1001 1198"],[31,14,"M1052 1258 Q1111 1237 1171 1271 T1254 1328"],[23,13,"M1060 1322 Q1110 1364 1155 1384 T1230 1368"],
+[29,10,"M199 1188 Q241 1211 286 1205 T360 1233"],[31,10,"M324 1342 Q369 1319 412 1348 T516 1348 Q551 1338 611 1340"],[10,8,"M240 985 Q246 957 281 933"],
+[43,14,"M1600 1342 Q1656 1349 1706 1320 T1788 1240 Q1801 1210 1818 1231 T1913 1310"],[24,9,"M1645 1162 Q1704 1130 1750 1160 T1803 1204"],[20,8,"M1627 1371 Q1703 1380 1747 1365 T1852 1397"],[12,8,"M1308 1428 Q1342 1417 1385 1442"],
+];
+const woods=[
+[307,230,90,38],[300,362,103,70],[541,224,126,22],[271,429,72,36],[643,351,34,31],[881,380,90,28],
+[1203,272,67,46],[1325,260,93,26],[1275,345,55,31],[1746,533,49,53],[794,920,112,65],[795,1089,105,70],[859,1209,149,47],[1158,1302,97,53],
+[1336,1033,62,70],[1509,913,99,46],[1571,794,58,50],[1761,769,45,44],[451,1290,130,47],[563,1338,55,27],[1685,1170,92,60],[1642,1282,63,66],[1330,1393,43,19],[255,716,12,24],
+];
+const landFills={kry:"#cec296",nes:"#d3c59a",ele:"#d7c79b",lern:"#d8bd8c",east:"#d9bd8e",west:"#d5bd90",er:"#dcc297",nor:"#d5c497",dio:"#d1c49b",say:"#d7b787",lam:"#d3c49b",orl:"#cebd89",isle:"#b3b289",quin:"#cfb386"};
+const biomes=[
+["kry","#e9dfc2","M160 90H725V198Q647 167 607 173T483 190Q386 200 342 163L270 203H160Z"],["kry","#a6a77e","M172 193Q323 150 435 197T711 188V357Q570 266 451 290T423 447Q290 507 172 447Z"],
+["east","#eae0c4","M985 98H1502V258Q1440 235 1386 245T1232 247Q1193 259 1152 309L1002 284Z M1630 110H1864V294Q1792 271 1714 285L1630 315Z"],
+["east","#a7aa80","M1120 299Q1206 242 1286 246T1471 253L1510 365Q1395 352 1328 392T1200 465Z M1664 485Q1740 451 1867 490V647H1664Z"],
+["west","#d5b286","M400 598H795L874 863Q724 837 610 914L400 827Z"],["west","#a8a980","M613 1100Q795 1066 955 1138T1290 1200V1425H607Z"],["west","#e7dabc","M1068 1393Q1130 1402 1167 1394T1219 1392V1462H1068Z"],
+["er","#bdb68b","M1252 895Q1352 876 1440 825T1534 659Q1630 728 1731 769L1853 642V918Q1623 876 1483 1000L1386 1159H1241Z"],
+["nor","#d4b288","M174 1141H390L375 1251 275 1320 218 1310Z"],["nor","#e9ddc1","M310 1364Q404 1316 478 1355T642 1341V1416H310Z"],
+["dio","#e7d9bb","M1574 1367Q1661 1335 1739 1308T1810 1213H1949V1430H1574Z"],["lam","#e9dcc0","M1290 1420Q1354 1430 1395 1399V1488H1290Z"],
+];
+
+const svg=document.querySelector('#map');
+const $=selector=>document.querySelector(selector);
+const W=2048,H=1536;
+const n=x=>Number(x.toFixed(2));
+const esc=s=>String(s).replace(/[&<>"]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[x]));
+function rng(seed){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}}
+const random=rng(84972);
+const between=(a,b)=>a+(b-a)*random();
+function coast(source,detail=1){
+ const raw=source.trim().split(/\s+/).map(pair=>pair.split(',').map(Number));
+ const fine=[];
+ for(let i=0;i<raw.length;i++){
+  const [x,y]=raw[i],[u,v]=raw[(i+1)%raw.length], dx=u-x,dy=v-y,len=Math.hypot(dx,dy);
+  fine.push([x,y]);
+  if(len>5&&detail){
+   const steps=Math.ceil(len/6);
+   for(let j=1;j<steps;j++){const d=j/steps,bend=between(-2.3,2.3);fine.push([x+dx*d-dy/len*bend,y+dy*d+dx/len*bend]);}
+  }
+ }
+ return 'M'+fine.map(p=>p.map(n).join(',')).join('L')+'Z';
+}
+const geo=Object.fromEntries(Object.entries(land).map(([k,p])=>[k,coast(p)]));
+for(const [i,[x,y,rx,ry]] of islands.entries()){
+ const ring=Array.from({length:16},(_,j)=>{const a=j*Math.PI/8,r=between(.78,1.17);return n(x+rx*r*Math.cos(a))+','+n(y+ry*r*Math.sin(a));});
+ geo['is'+i]=coast(ring.join(' '),0);
+}
+const lakePaths=lakes.map(p=>coast(p)).join('');
+const iconPaths={
+ city:'<path d="M-6 5V-1l3-3 3 3 3-5 4 4v7Z"/><path d="M-1 5V2m4-1v2"/>',
+ port:'<circle cy="-5" r="2"/><path fill="none" d="M0-3V6m-4-7h8M-7 1q0 5 7 6 7-1 7-6m-9 2 2-2 2 1m10 1-2-2-2 1"/>',
+ fort:'<path d="M-7 6V-5h3v3h3v-3h3v3h2v-3h3V6Z"/><path d="M-2 6V2q2-3 4 0v4"/>',
+ temple:'<path d="M-7-2 0-7 7-2Z"/><path fill="none" d="M-5 0v5m5-5v5m5-5v5M-7 6H7"/>',
+ ruin:'<path fill="none" d="M-7 6V0l3-2 2 2 2-6h3v3l4 2v7m-12-4h2m4 0h3M-7 6H7"/>',
+ bridge:'<path fill="none" d="M-7-3H7M-7 3q3-7 7 0 4-7 7 0M-7-3v7m14-7v7"/>'
+};
+const types={city:'Ville',port:'Port',fort:'Fortification',temple:'Temple ou sanctuaire',ruin:'Ruines',bridge:'Pont'};
+const factions=[
+ ["Valkyries","Sarpan","#8dbbd1"],["Banshees","Citadelle de Glace","#c87775"],["Trèfle Doré","Shizawa","#e2bd78"],["Lune Sanglante","Orves","#e38776"],["Léviathan","DeathCrown","#d3879b"],["Lin Kuei","Bihan","#89a7ba"],["Azaan","Khemkheta","#c5a88f"],["Hakkeshu","Ashehys","#a6c9ac"],["Antarès","Silvercrest","#e5d7a8"],["Succubes","Kagura","#c0aedb"]
+];
+const all=[...places,...extras];
+const defs=`
+<style>
+text{font-family:Georgia,serif;user-select:none}
+.region{font-weight:normal;font-style:italic;fill:#412d21;stroke:#ecdaad;stroke-width:2.8;paint-order:stroke;stroke-linejoin:round;letter-spacing:1.5px}
+.sea-label{font-style:italic;fill:#4a665b;stroke:#d9d5ad;stroke-width:1.6;paint-order:stroke;letter-spacing:3px;opacity:.95}
+.place-label,.townlabel,.feature-label{fill:#3c2b20;stroke:#eedbb0;stroke-width:3;stroke-linejoin:round;paint-order:stroke;font-weight:bold}
+.feature-label{fill:#65412b}
+.place,.faction{cursor:pointer}
+.place:hover .disc,.place:focus-visible .disc,.place.selected .disc{stroke:#6c281b;stroke-width:2.6;fill:#a9593d}
+.place:focus,.faction:focus{outline:none}
+.faction:hover .disc,.faction:focus-visible .disc{stroke:#752e21;stroke-width:2}
+</style>
+<radialGradient id="ocean" cx=".53" cy=".45" r=".72"><stop stop-color="#bec6a9"/><stop offset=".72" stop-color="#b0b597"/><stop offset="1" stop-color="#8e9680"/></radialGradient>
+<radialGradient id="paperEdge" cx=".5" cy=".46" r=".68"><stop offset=".64" stop-color="#70451e" stop-opacity="0"/><stop offset=".9" stop-color="#76512c" stop-opacity=".14"/><stop offset="1" stop-color="#49301c" stop-opacity=".45"/></radialGradient>
+<linearGradient id="shade" x2=".83" y2="1"><stop stop-color="#fff1ca" stop-opacity=".35"/><stop offset=".57" stop-color="#eed8a2" stop-opacity=".07"/><stop offset="1" stop-color="#816137" stop-opacity=".23"/></linearGradient>
+<filter id="paperTexture" x="0%" y="0%" width="100%" height="100%">
+ <feTurbulence type="fractalNoise" baseFrequency=".42" numOctaves="3" seed="44" stitchTiles="stitch" result="grain"/>
+ <feColorMatrix in="grain" type="matrix" values="0 0 0 0 .31   0 0 0 0 .21   0 0 0 0 .10   .24 .22 .14 0 -.21"/>
+</filter>
+<filter id="paperClouds" x="0%" y="0%" width="100%" height="100%">
+ <feTurbulence type="fractalNoise" baseFrequency=".004 .008" numOctaves="4" seed="71" stitchTiles="stitch" result="clouds"/>
+ <feColorMatrix in="clouds" type="matrix" values="0 0 0 0 .49   0 0 0 0 .27   0 0 0 0 .10   .33 .24 .21 0 -.29"/>
+</filter>
+<pattern id="seaGrain" width="157" height="106" patternUnits="userSpaceOnUse"><path d="M7 26q8 2 15 0t14 0m62-8q5 1 9 0m21 40q6 2 13 0m-98 24q6 1 12 0t12 0m34 11q4 1 8 0" fill="none" stroke="#53695a" opacity=".24" stroke-width=".68"/></pattern>
+<pattern id="landGrain" width="40" height="32" patternUnits="userSpaceOnUse"><path d="M4 5l2 1m15-4l2 1m3 8l2 1m-17 6 2 1m6 2 2 1m9 1 2 1M1 15l2 1m19 13l1 .5" fill="none" stroke="#715137" opacity=".28" stroke-width=".62"/></pattern>
+<pattern id="coastHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(38)"><path d="M0 0V6" stroke="#4b675d" stroke-opacity=".26" stroke-width=".8"/></pattern>
+<filter id="soft" x="-10%" y="-15%" width="120%" height="130%"><feGaussianBlur stdDeviation="13"/></filter>
+<clipPath id="ground">${Object.values(geo).map(d=>`<path d="${d}"/>`).join('')}</clipPath>
+<mask id="dry"><rect width="2048" height="1536" fill="white"/><path d="${lakePaths}" fill="black"/></mask>
+${Object.entries(geo).map(([k,d])=>`<clipPath id="clip-${k}"><path d="${d}"/></clipPath>`).join('')}
+${Object.entries(iconPaths).map(([k,p])=>`<g id="ico-${k}">${p}</g>`).join('')}
+<path id="sea-west" d="M95 1030Q65 800 94 576"/><path id="sea-song" d="M375 1165Q517 1080 582 947"/><path id="sea-origin" d="M864 781Q967 849 1033 1043"/><path id="sea-east" d="M1951 638Q1990 800 1956 1030"/>
+`;
+const contours=Object.values(geo).join('');
+const borderWest='M634 918Q661 885 704 875T745 848Q765 827 792 800';
+const borderEast='M1648 277Q1712 283 1744 304T1810 345Q1826 360 1841 352';
+const borderEr='M1728 767Q1717 782 1697 795Q1721 804 1717 827';
+const compassRays=Array.from({length:16},(_,i)=>{
+ const long=i%4===0,mid=i%2===0,depth=long?65:mid?47:32,half=long?11:mid?8:5;
+ return `<g transform="rotate(${i*22.5})"><path d="M0-${depth} ${half}-${half} 0 0-${half}-${half}Z" fill="#e4cfa2" stroke="#573b27" stroke-width=".95"/><path d="M0-${depth} ${half}-${half} 0 0Z" fill="${long?'#824831':'#65563b'}"/></g>`;
+}).join('');
+const corner=`<path d="M0 95V0H95M5 73V5H73M11 45V11H45" fill="none" stroke="#6c482e" stroke-width="1.65"/><path d="M13 49Q28 48 32 31T62 13Q42 11 38 22T13 49ZM17 74Q15 55 26 49T45 41Q42 53 32 56T17 74ZM47 18Q48 28 40 35T27 38Q32 32 34 27T47 18Z" fill="#986044" stroke="#67472f" stroke-width=".8"/><circle cx="16" cy="16" r="2.6" fill="#724832"/>`;
+const worldUI=`
+<g id="frame" pointer-events="none">
+ <path d="M0 0H2048V1536H0ZM24 24V1512H2024V24Z" fill="#d4b483" fill-rule="evenodd"/>
+ <rect x="11" y="11" width="2026" height="1514" rx="3" fill="none" stroke="#573823" stroke-width="2.6"/>
+ <rect x="18" y="18" width="2012" height="1500" rx="3" fill="none" stroke="#98734a" stroke-width="1.15"/>
+ <rect x="28" y="28" width="1992" height="1480" rx="3" fill="none" stroke="#6c4b31" stroke-width="1.7"/>
+ <rect x="34" y="34" width="1980" height="1468" rx="3" fill="none" stroke="#9d7952" stroke-width=".74"/>
+ <g transform="translate(26 26)">${corner}</g><g transform="translate(2022 26) scale(-1 1)">${corner}</g><g transform="translate(26 1510) scale(1 -1)">${corner}</g><g transform="translate(2022 1510) scale(-1 -1)">${corner}</g>
+ <g transform="translate(63 47) scale(.93)">
+  <path d="M4 22Q-15 7-3 1H16V-2H244V1H265Q276 8 257 22L254 77Q270 90 262 98H244V102H17V98H-5Q-14 89 1 78Z" fill="#ad8055" opacity=".45" transform="translate(4 5)"/>
+  <path d="M4 22Q-15 7-3 1H16V-2H244V1H265Q276 8 257 22L254 77Q270 90 262 98H244V102H17V98H-5Q-14 89 1 78Z" fill="#e5cb96" stroke="#63422b" stroke-width="2.25"/>
+  <path d="M13 11H246L251 18V80L244 91H15L8 83 9 20Z" fill="#ecd6a4" stroke="#9c7049" stroke-width=".95"/>
+  <text x="130" y="62" text-anchor="middle" fill="#593622" font-size="65" font-style="italic">Eardan</text>
+  <path d="M39 73H220M91 76h77" stroke="#916040" stroke-width=".85"/>
+  <text x="130" y="87" text-anchor="middle" fill="#6f4830" font-size="9.8" letter-spacing="3.3">ATLAS DU MONDE</text>
+  <path d="M-6 4q18 1 9 14m262-14q-18 1-9 14M-6 95q17-2 9-14m262 14q-17-2-9-14" fill="none" stroke="#785033" stroke-width="1.25"/>
+ </g>
+ <g transform="translate(1943 137)" stroke="#66442e" fill="none">
+  <circle r="48" stroke-width="1.5"/><circle r="40" stroke-width=".8"/><circle r="53" stroke-width=".6" stroke-dasharray="1 3.1"/>
+  ${compassRays}<circle r="4.4" fill="#dfc799"/><circle r="1.6" fill="#724631" stroke="none"/>
+  <g fill="#66412b" stroke="none" text-anchor="middle" font-size="15" font-style="italic"><text y="-71">N</text><text x="71" y="5">E</text><text y="82">S</text><text x="-72" y="5">O</text></g>
+ </g>
+ <g transform="translate(67 1463)" fill="#65452c" font-size="15">
+  <path d="M-9-29H278l8 17-8 21H-9l-8-20Z" fill="#e5cea0" fill-opacity=".84" stroke="#775438" stroke-width="1"/>
+  <text y="-9">0</text><text x="64" y="-9" text-anchor="middle">500</text><text x="128" y="-9" text-anchor="middle">1 000</text><text x="192" y="-9" text-anchor="middle">1 500</text><text x="254" y="-9" text-anchor="middle">2 000 km</text>
+  <path d="M0 0h64v5H0zm128 0h64v5h-64z"/><path d="M0 0h256v5H0Z" fill="none" stroke="#65452c" stroke-width=".9"/>
+ </g>
+</g>`;
+const sailingShip=`<path d="M-36 14Q-12 18 20 12l13-6-9 17Q3 31-22 26Z" fill="#b18b58" stroke="#745239" stroke-width="1.25"/><path d="M-28 22Q3 25 24 18M-11 18V26m18-10v10m13-13v8M-3 16l1-61m20 58 2-49m-37 52-2-37" fill="none" stroke="#694832" stroke-width="1.15"/><path d="M-17-32Q-2-27 11-34L9-15Q-1-9-17-13ZM-21-12Q-2-5 15-13L11 7Q-2 11-19 6ZM11-28Q21-25 29-30L27-13Q19-8 10-12ZM-26-18Q-17-16-9-20l-1 12q-8 5-15 3Z" fill="#e4cb9a" stroke="#79573c" stroke-width="1.05"/><path d="M-2-45q10-3 15 3l-15 2M20-36q7-2 11 2l-11 2" fill="#974f39" stroke="#7a4a33" stroke-width=".65"/><path d="M-36 28q11-3 20 0t22 0m-38 7q13 2 27-1m20-3q14 0 24-5" fill="none" stroke="#566c60" stroke-width="1.1"/>`;
+const maritime=`<g id="maritime" pointer-events="none" opacity=".66">${[[842,240,1.13,-8],[195,750,-.76,7],[1091,1013,.93,5],[1931,1055,-.75,-7]].map(([x,y,z,r])=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${z} ${Math.abs(z)})">${sailingShip}</g>`).join('')}</g>`;
+const grid=Array.from({length:19},(_,i)=>`M${(i+1)*102.4} 0v1536`).join('')+Array.from({length:14},(_,i)=>`M0 ${(i+1)*102.4}h2048`).join('');
+const political=`
+<g id="political" display="none" clip-path="url(#ground)" mask="url(#dry)">
+${[['kry',0],['nes',1],['ele',2],['lern',3],['east',4],['west',10],['er',11],['nor',13],['dio',14],['say',9],['lam',15],['orl',10]].map(([k,i])=>`<path d="${geo[k]}" fill="${regions[i][3]}" fill-opacity=".52" stroke="${regions[i][3]}" stroke-width="4"/>`).join('')}
+<g clip-path="url(#clip-west)"><path d="${borderWest}L797 585H397V939Z" fill="#d9864d" fill-opacity=".65"/><path d="${borderWest}" class="border"/></g>
+<g clip-path="url(#clip-east)"><path d="${borderEast}L1875 138H1630Z" fill="#e5ebdf" fill-opacity=".60"/><path d="${borderEast}" class="border"/></g>
+<g clip-path="url(#clip-er)"><path d="${borderEr}L1859 875V630H1710Z" fill="#9b9a70" fill-opacity=".66"/><path d="${borderEr}" class="border"/></g>
+</g>`;
+svg.innerHTML=`<defs>${defs}<style>.border{fill:none;stroke:#804b3c;stroke-width:2.4;stroke-dasharray:5 4;stroke-linecap:round}</style></defs>
+<rect width="${W}" height="${H}" fill="url(#ocean)"/><rect width="${W}" height="${H}" fill="url(#seaGrain)"/><path d="${grid}" fill="none" stroke="#5d6a54" stroke-opacity=".13"/>
+<g fill="none" stroke-linejoin="round"><path d="${contours}" stroke="#768976" stroke-opacity=".23" stroke-width="28"/><path d="${contours}" stroke="url(#coastHatch)" stroke-width="22"/><path d="${contours}" stroke="#597465" stroke-opacity=".30" stroke-width="12"/><path d="${contours}" stroke="#e0d9ae" stroke-opacity=".80" stroke-width="7"/><path d="${contours}" stroke="#4f4e38" stroke-width="2.5"/></g>
+<g clip-path="url(#ground)" mask="url(#dry)">
+${Object.entries(geo).map(([k,d])=>`<path d="${d}" fill="${landFills[k]??'#a3a37a'}"/>`).join('')}
+${biomes.map(([k,color,d])=>`<g clip-path="url(#clip-${k})"><path d="${d}" fill="${color}" filter="url(#soft)"/></g>`).join('')}
+<rect width="${W}" height="${H}" fill="url(#shade)"/><rect id="landGrainLayer" width="${W}" height="${H}" fill="url(#landGrain)"/>
+<g id="trees"></g><g id="mountains"></g></g><path d="${contours}" fill="none" stroke="#62503b" stroke-width="1.18" stroke-linejoin="round" opacity=".86"/>
+${political}
+<g id="hydro" clip-path="url(#ground)"><path d="${lakePaths}" fill="#8da797" stroke="#536b60" stroke-width="1.15"/>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">${rivers.map(([d,w])=>`<path d="${d}" stroke="#e0dcac" stroke-width="${w+1.1}" opacity=".62"/><path d="${d}" stroke="#4c726a" stroke-width="${w}"/>`).join('')}</g></g>
+<g id="localMaps" clip-path="url(#ground)" mask="url(#dry)" display="none"></g>
+${maritime}<g id="seaNames">${[['sea-west','Océan de Chaerys'],['sea-song','Océan des Songes'],['sea-origin','Océan des Origines'],['sea-east','Océan de Keatys']].map(([id,s])=>`<text class="sea-label" font-size="31"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${s}</textPath></text>`).join('')}</g>
+<g id="regionNames">${regions.map(([s,x,y])=>`<text x="${x}" y="${y}" class="region" text-anchor="middle" font-size="${s.length>16?24:43}">${esc(s)}</text>`).join('')}</g>
+<g id="markers"></g><g id="factionMarkers" display="none"></g><g id="paperEffects" pointer-events="none"><rect width="${W}" height="${H}" fill="#93642d" filter="url(#paperClouds)"/><rect width="${W}" height="${H}" fill="#77522e" filter="url(#paperTexture)" opacity=".5"/><rect width="${W}" height="${H}" fill="url(#paperEdge)"/></g>${worldUI}`;
+function tree(x,y,s,color){
+ return `<g transform="translate(${n(x)} ${n(y)}) scale(${n(s)})"><path d="M-.3-6Q1-4 2.1-3.2L.9-3 3.3-.5 1.9-.5 4.4 2.2Q2.9 3 1.3 2.8L2 4-2.1 3.6-3.8 3.1-1.9 1.1-3.4 1.1-1.1-1.7-2.4-1.4Z" fill="${color}" fill-opacity=".68" stroke="${color}" stroke-width=".47" stroke-linejoin="round"/><path d="M0-3.9V5.2M0 .1l1.9-.9M0 1.9l-2.4-.6" fill="none" stroke="#5e5339" stroke-width=".48"/></g>`;
+}
+let forest='';
+for(const [x,y,rx,ry] of woods){
+ const count=Math.max(10,Math.round(rx*ry/31));
+ for(let i=0;i<count;i++){
+  const a=between(0,Math.PI*2),r=Math.sqrt(random());
+  const px=x+rx*r*Math.cos(a),py=y+ry*r*Math.sin(a);
+  forest+=tree(px,py,between(.3,.89),['#5c6241','#686747','#747654','#82805a'][Math.floor(random()*4)]);
+ }
+}
+$('#trees').innerHTML=forest;
+const guide=document.createElementNS(svg.namespaceURI,'path');
+let relief=[];
+for(const [height,spacing,d] of ranges){
+ guide.setAttribute('d',d);
+ const len=guide.getTotalLength();
+ for(let i=4;i<len;i+=spacing*between(.8,1.2)){
+  const {x,y}=guide.getPointAtLength(i),h=height*between(.24,.66),w=h*between(.68,1.17);
+  relief.push([x+between(-3,3),y+between(-8,8),h,w,random()]);
+ }
+}
+relief.sort((a,b)=>a[1]-b[1]);
+$('#mountains').innerHTML=relief.map(([x,y,h,w,r])=>{
+ const c=n(w*.12+(r-.5)*w*.27),l=n(-w),right=n(w*(1.04+r*.16)),p=n(-h),q=n(-h*(.48+r*.12));
+ const foot=n(h*.14),shoulder=n(w*(.46+r*.12)),leftFold=n(-w*(.42+r*.12));
+ const snow=h>23||y<203||y>1360;
+ const base=snow?'#e0d2af':r>.45?'#c4a67b':'#bc9e73';
+ const ridge=`M${l} 1 Q${n(-w*.78)} ${n(-h*.12)} ${leftFold} ${q}L${n(c-w*.14)} ${n(-h*.73)} ${c} ${p} ${n(c+w*.23)} ${n(-h*.73)} ${shoulder} ${n(-h*.49)} Q${n(w*.67)} ${n(-h*.25)} ${right} 2`;
+ const face=`M${c} ${p} ${n(c+w*.23)} ${n(-h*.73)} ${shoulder} ${n(-h*.49)} Q${n(w*.67)} ${n(-h*.25)} ${right} 2Q${n(w*.61)} ${n(h*.06)} ${n(w*.42)} ${foot}L${n(-w*.13)} ${n(h*.09)} ${n(w*.17)} ${n(-h*.36)}Z`;
+ const hatch=Array.from({length:Math.max(4,Math.round(w/1.9))},(_,j)=>{
+  const t=(j+1)/(Math.max(4,Math.round(w/1.9))+1);
+  const hx=c+(right-c)*t,hy=-h+h*t,lean=(.08+.14*t)*w,drop=(.1+.22*Math.sin(t*3.1))*h;
+  return `M${n(hx-w*.09)} ${n(hy+h*.13)}q${n(lean*.45)} ${n(drop*.47)} ${n(-lean*.31)} ${n(drop)}`;
+ }).join('');
+ return `<g transform="translate(${n(x)} ${n(y)})"><path d="${ridge}Q${n(w*.62)} ${n(h*.03)} ${n(w*.43)} ${foot}L${n(-w*.15)} ${n(h*.09)} ${n(-w*.45)} ${n(h*.11)}Z" fill="${base}" opacity=".92"/><path d="${face}" fill="#826247" opacity=".35"/><path d="${hatch}" fill="none" stroke="#654631" stroke-opacity=".65" stroke-width=".58" stroke-linecap="round"/><path d="${ridge}M${c} ${p}Q${n(w*.21)} ${n(-h*.65)} ${n(w*.17)} ${n(-h*.36)}L${n(-w*.13)} ${n(h*.09)}" fill="none" stroke="#5e432e" stroke-opacity=".8" stroke-width=".79" stroke-linejoin="round"/>${snow?`<path d="M${c} ${p} ${n(c+w*.22)} ${n(-h*.74)} ${n(c+w*.08)} ${n(-h*.79)} ${n(c-w*.02)} ${n(-h*.66)} ${n(c-w*.09)} ${n(-h*.77)} ${n(c-w*.26)} ${n(-h*.65)}Z" fill="#f2e5c8"/>`:''}</g>`;
+}).join('');
+const layouts={0:[13,-6],1:[13,-6],2:[-12,-6,'end'],3:[12,6],4:[13,6],5:[-12,6,'end'],6:[12,5],7:[-12,5,'end'],8:[13,5],9:[13,5],10:[13,5],11:[14,6],12:[-12,5,'end'],13:[13,5],14:[-13,5,'end'],15:[15,7],16:[13,8],17:[13,7],18:[14,7],19:[-13,4,'end'],20:[-13,3,'end'],21:[13,8],22:[15,4],23:[13,4],24:[-13,4,'end']};
+const marker=(p,i)=>{
+ const [x,y,name,kind]=p, added=i>=places.length;
+ const [lx,ly,anchor='start']=layouts[i]??[12,-7];
+ const desc=esc(name);
+ return `<g class="place${added?' added':''}" data-index="${i}" data-kind="${kind}" transform="translate(${x} ${y})" tabindex="0" role="button" aria-label="${desc}"><title>${desc}</title><g class="mark"><circle class="disc" r="${added?7.5:9}" fill="${added?'#e5cda1':'#784832'}" stroke="${added?'#805e3d':'#513628'}" stroke-width="1.2"/><use href="#ico-${kind}" transform="scale(${added?.66:.8})" fill="${added?'#6b4c31':'#f7e3b5'}" stroke="${added?'#6b4c31':'#f7e3b5'}" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"/>${added?'<circle cx="5.6" cy="-5.7" r="2.3" fill="#ac5635" stroke="#e8c58b" stroke-width=".7"/>':''}</g><text class="${added?'feature-label':'place-label'}" data-lx="${lx}" data-ly="${ly}" x="${lx}" y="${ly}" text-anchor="${anchor}" font-size="${added?12:17}">${desc}</text></g>`;
+};
+$('#markers').innerHTML=all.map(marker).join('');
+const marks=[...document.querySelectorAll('.place')];
+$('#factionMarkers').innerHTML=factions.map(([name,site,color],i)=>{
+ const j=places.findIndex(p=>p[2]===site),[x,y]=places[j];
+ return `<g class="faction" data-index="${j}" transform="translate(${x} ${y})" tabindex="0" role="button" aria-label="${esc(name)} · ${esc(site)}"><title>${esc(name)} · ${esc(site)}</title><g class="flag" transform="translate(0,-19)"><circle class="disc" r="9" fill="${color}" stroke="#263a38" stroke-width="1.2"/><text text-anchor="middle" y="3.4" fill="#34271e" font-size="10" font-weight="bold">${i+1}</text></g></g>`;
+}).join('');
+const townData=new Map();
+function makeTown(p,i){
+ const [x,y,name,kind]=p,random=rng((i+11)*91801);
+ const port=kind==='port',fort=kind==='fort';
+ const radius=fort?8.8:10+random()*4.2, aspect=port?.74:.88;
+ const turn=Math.round(random()*230)-115, drift=(random()-.5)*radius*.29;
+ const pt=(x,y)=>n(x)+' '+n(y);
+ const ring=Array.from({length:13},(_,j)=>{
+  const angle=j*Math.PI*2/13;
+  const r=radius*(.91+random()*.20);
+  return [r*Math.cos(angle),r*Math.sin(angle)*aspect];
+ });
+ const wall=ring.map(([x,y])=>pt(x,y)).join(' ');
+ const roofs=[],lanes=[],groves=[];
+ for(let j=-3;j<=3;j++){
+  const d=j*radius*.25;
+  lanes.push(`M${pt(-radius*1.15,d+drift)}Q${pt(-radius*.27,d-drift)} ${pt(radius*1.17,d+drift*.45)}`);
+  if(j%2===0)lanes.push(`M${pt(d-drift,-radius)}Q${pt(d+drift,0)} ${pt(d+drift*.7,radius)}`);
+ }
+ const axis=`M${pt(-radius*1.23,radius*.55)}Q${pt(-radius*.25,radius*.29)} 0 0T${pt(radius*1.17,-radius*.55)}`;
+ for(let row=-8;row<=8;row++)for(let col=-9;col<=9;col++){
+  const bx=(col+.1)*radius*.111+(random()-.5)*.63,by=(row+.2)*radius*.10+(random()-.5)*.43;
+  if(Math.hypot(bx/radius,by/(radius*aspect))>1.02||Math.hypot(bx,by)<2.45||random()<(fort?.34:.15))continue;
+  const w=.38+random()*.71,h=.32+random()*.61,tilt=(random()-.5)*21+(bx<0?-6:3);
+  const color=['#9d6c4f','#ae805a','#bd8d61','#8e7457','#a57356'][Math.floor(random()*5)];
+  roofs.push(`<g transform="translate(${pt(bx,by)}) rotate(${n(tilt)})"><path d="M.1 .1H${n(w+.13)}V${n(h+.14)}H.1Z" fill="#826849" opacity=".4"/><rect width="${n(w)}" height="${n(h)}" fill="${color}" stroke="#674933" stroke-width=".09"/><path d="M0 0h${n(w)}v${n(h*.54)}H0Z" fill="#d1a87c" opacity=".55"/><path d="M0 ${n(h*.54)}H${n(w)}" stroke="#6b4a35" stroke-width=".11"/><path d="M${n(w*.23)} .12v${n(h*.21)}m${n(w*.21)} ${n(h*.43)}v${n(h*.16)}" stroke="#6b4a35" stroke-width=".06" opacity=".6"/></g>`);
+ }
+ for(let j=0;j<47;j++){
+  const angle=random()*Math.PI*2,r=radius*(.95+random()*.65);
+  const gx=n(r*Math.cos(angle)),gy=n(r*Math.sin(angle)*aspect),g=.11+random()*.29;
+  groves.push(`<path d="M${gx} ${gy}q${n(g*.8)} ${n(-g*2)} ${n(g*1.8)} 0q${n(-g*.6)} ${n(g)} ${n(-g*1.8)} 0Z" fill="#7f8054" fill-opacity=".54" stroke="#6f6b46" stroke-width=".07"/>`);
+ }
+ const towers=ring.filter((_,j)=>j%2===0).map(([x,y])=>`<circle cx="${n(x)}" cy="${n(y)}" r=".29" fill="#bb8f64" stroke="#694b35" stroke-width=".11"/>`).join('');
+ const landmark=fort?'fort':port?'port':'temple';
+ return `<g transform="translate(${x} ${y})"><g transform="rotate(${turn})">
+ <defs><clipPath id="town-clip-${i}"><polygon points="${wall}"/></clipPath></defs>
+ ${groves.join('')}<path d="${axis}" fill="none" stroke="#97714a" stroke-width=".32" stroke-dasharray=".47 .19"/>
+ <polygon points="${wall}" fill="#d2b581" stroke="#8e6b49" stroke-opacity=".45" stroke-width="1.15"/>
+ <g clip-path="url(#town-clip-${i})">${roofs.join('')}
+ <path d="${lanes.join(' ')}" fill="none" stroke="#9a764e" stroke-width=".52"/><path d="${lanes.join(' ')}" fill="none" stroke="#e1c69a" stroke-width=".38"/>
+ <path d="${axis}" fill="none" stroke="#9b744d" stroke-width=".73"/><path d="${axis}" fill="none" stroke="#ead0a5" stroke-width=".58"/></g>
+ <polygon points="${wall}" fill="none" stroke="#664a34" stroke-width=".33" stroke-dasharray="${port?'1 .7':'none'}"/>
+ <polygon points="${wall}" fill="none" stroke="#ead0a1" stroke-width=".12"/>${port?'':towers}
+ <path d="M-2.15-1.05-1.35-1.86H1.35L2.07-.95V1.16L1.22 1.91H-1.3L-2.09 1.11Z" fill="#ead0a0" stroke="#8d6b48" stroke-width=".16"/>
+ <rect x="-1.11" y="-.94" width="2.22" height="1.88" rx=".12" fill="#81553b" stroke="#63432e" stroke-width=".13"/>
+ <use href="#ico-${landmark}" transform="scale(.093)" fill="#f1d4a0" stroke="#f1d4a0" stroke-width=".8"/>
+ </g><text x="0" y="${n(-radius-2.6)}" font-size="2.6" style="stroke-width:.46px;font-style:italic" text-anchor="middle" class="townlabel">${esc(name)}</text><text x="0" y="${n(radius+3.2)}" font-size="1.25" style="stroke-width:.23px;font-weight:normal;font-style:italic" text-anchor="middle" class="townlabel">Plan proposé</text></g>`;
+}
+for(const [i,p] of places.entries())townData.set(i,makeTown(p,i));
+let view={x:0,y:0,w:W,h:H},mode='terrain',selected=-1,lastTownKey='';
+const min=(a,b,c)=>Math.min(c,Math.max(a,b));
+function setView(x,y,w){
+ w=min(w,W/48,W);
+ const h=w*H/W;
+ view={x:min(x,0,W-w),y:min(y,0,H-h),w,h};
+ svg.setAttribute('viewBox',Object.values(view).join(' '));
+ updateDetail();
+}
+function updateDetail(){
+ const z=W/view.w, mapScale=z>2?2/z:1;
+ $('#zoomValue').value=(Math.round(z*10)/10)+'×';
+ $('#in').disabled=z>=47.999;
+ $('#out').disabled=z<=1;
+ $('#frame').style.display=z>1.1?'none':'';
+ $('#paperEffects').style.display=z>5?'none':'';
+ $('#trees').style.opacity=z>=12?'.13':'1';
+ $('#landGrainLayer').style.display=z>=12?'none':'';
+ $('#regionNames').style.display=z>3.4?'none':'';
+ $('#seaNames').style.display=z>3.4?'none':'';
+ $('#maritime').style.display=z>3.4?'none':'';
+ $('#hydro').style.display=$('#hydroToggle').checked?'':'none';
+ const extraOn=$('#extraToggle').checked;
+ for(const [i,m] of marks.entries()){
+  const added=i>=places.length, town=z>=12&&!added;
+  m.style.display=town||added&&!extraOn?'none':'';
+  m.querySelector('.mark').setAttribute('transform','scale('+mapScale+')');
+  const text=m.querySelector('text');
+  text.style.display=added&&z<3?'none':'';
+  text.setAttribute('x',text.dataset.lx*mapScale);
+  text.setAttribute('y',text.dataset.ly*mapScale);
+  text.setAttribute('transform',`translate(${text.dataset.lx*mapScale} ${text.dataset.ly*mapScale}) scale(${mapScale}) translate(${-text.dataset.lx*mapScale} ${-text.dataset.ly*mapScale})`);
+ }
+ for(const flag of document.querySelectorAll('.flag'))flag.setAttribute('transform',`translate(0 ${-19*mapScale}) scale(${mapScale})`);
+ const visibleTowns=z>=12?[...townData.keys()].filter(i=>{const [x,y]=places[i];return x>view.x-32&&x<view.x+view.w+32&&y>view.y-32&&y<view.y+view.h+32}):[];
+ const key=visibleTowns.join(',');
+ if(key!==lastTownKey){
+  $('#localMaps').innerHTML=visibleTowns.map(i=>townData.get(i)).join('');
+  lastTownKey=key;
+ }
+ $('#localMaps').style.display=z>=12?'':'none';
+ $('#localMaps').setAttribute('display',z>=12?'inline':'none');
+}
+function worldPoint(clientX,clientY){
+ return new DOMPoint(clientX,clientY).matrixTransform(svg.getScreenCTM().inverse());
+}
+function zoomBy(factor, x=view.x+view.w/2, y=view.y+view.h/2){
+ const w=min(view.w/factor,W/48,W), ratio=w/view.w;
+ setView(x-(x-view.x)*ratio,y-(y-view.y)*ratio,w);
+}
+function select(i,zoom=0){
+ const [x,y,name,kind,region,faction,note]=all[i];
+ if(selected>=0)marks[selected].classList.remove('selected');
+ selected=i;
+ marks[i].classList.add('selected');
+ const added=i>=places.length;
+ $('#selection').innerHTML=`<div class="badge">${added?'Proposition':'Repère source'} · ${esc(types[kind])}</div><h3>${esc(name)}</h3><p class="muted">${esc(region)}${faction?' · '+esc(faction):''}</p>${note?`<p class="meta">${esc(note)}</p>`:''}${added?'':`<button class="local-button" id="localView">Voir le plan proposé</button>`}`;
+ $('#localView')?.addEventListener('click',()=>select(i,27));
+ if(zoom){
+  const w=W/zoom,h=H/zoom;
+  if(added&&!$('#extraToggle').checked)$('#extraToggle').checked=true;
+  setView(x-w/2,y-h/2,w);
+ }
+}
+function renderLegend(){
+ const icons=Object.entries(types).map(([k,v])=>`<div class="row"><svg class="legend-icon" viewBox="-9 -9 18 18"><use href="#ico-${k}" fill="#79543a" stroke="#79543a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>${v}</div>`).join('');
+ const extra='<div class="row"><i class="swatch" style="background:#ac5635;border-radius:50%"></i> Lieu ajouté</div>';
+ let key='';
+ if(mode==='nations'){
+  const list=regions.filter(r=>r[4]&&r[0]!=='Solaria');
+  key='<h3>Nations</h3>'+list.map(([name,,,color,nation])=>`<div class="row"><i class="swatch" style="background:${color}"></i>${esc(nation)} · ${esc(name)}</div>`).join('')+'<p class="meta">Solaria figure dans l’aire lunarienne.</p>';
+ }else if(mode==='factions'){
+  key='<h3>Implantations</h3>'+factions.map(([name,site,color],i)=>`<div class="row"><span style="color:#79482d">${i+1}</span> ${esc(name)} · ${esc(site)}</div>`).join('');
+ }
+ $('#legend').innerHTML=(key?key+'<hr style="border:0;border-top:1px solid #43585a">':'')+icons+extra;
+}
+function setMode(next){
+ mode=next;
+ for(const b of document.querySelectorAll('[data-mode]'))b.setAttribute('aria-pressed',String(b.dataset.mode===mode));
+ $('#political').setAttribute('display',mode==='nations'?'inline':'none');
+ $('#factionMarkers').setAttribute('display',mode==='factions'?'inline':'none');
+ renderLegend();
+}
+const normalize=s=>s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/[’']/g,'');
+$('#search').addEventListener('input',()=>{
+ const value=normalize($('#search').value.trim());
+ if(!value){$('#results').replaceChildren();return;}
+ const found=all.map((p,i)=>[p,i]).filter(([p])=>normalize(p.slice(2).join(' ')).includes(value)).slice(0,12);
+ $('#results').innerHTML=found.length?found.map(([p,i])=>`<button data-result="${i}">${esc(p[2])}<small>${esc(p[4])} · ${esc(types[p[3]])}</small></button>`).join(''):'<p class="meta">Aucun lieu trouvé.</p>';
+});
+$('#results').addEventListener('click',e=>{const b=e.target.closest('[data-result]');if(b){select(Number(b.dataset.result),6);if(innerWidth<=760)toggleSidebar(false);}});
+$('#search').addEventListener('keydown',e=>{if(e.key==='Enter')$('#results button')?.click();});
+for(const b of document.querySelectorAll('[data-mode]'))b.addEventListener('click',()=>setMode(b.dataset.mode));
+for(const id of ['#hydroToggle','#extraToggle'])$(id).addEventListener('change',updateDetail);
+$('#in').addEventListener('click',()=>zoomBy(1.55));
+$('#out').addEventListener('click',()=>zoomBy(1/1.55));
+$('#reset').addEventListener('click',()=>setView(0,0,W));
+function toggleSidebar(open){
+ $('#sidebar').classList.toggle('open',open);
+ $('#toggleSide').setAttribute('aria-expanded',String(open));
+}
+$('#toggleSide').addEventListener('click',()=>toggleSidebar(!$('#sidebar').classList.contains('open')));
+svg.addEventListener('wheel',e=>{
+ e.preventDefault();
+ const {x,y}=worldPoint(e.clientX,e.clientY);
+ const factor=Math.exp(min(-e.deltaY*(e.deltaMode===1?.045:.0022),-.65,.65));
+ zoomBy(factor,x,y);
+},{passive:false});
+let drag=null,lastMoved=false;
+svg.addEventListener('pointerdown',e=>{
+ if(e.button!==0)return;
+ const matrix=svg.getScreenCTM();
+ drag={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y,scale:matrix.a,id:e.pointerId};
+ lastMoved=false;
+});
+svg.addEventListener('pointermove',e=>{
+ if(!drag||e.pointerId!==drag.id)return;
+ const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+ if(!lastMoved&&Math.hypot(dx,dy)<4)return;
+ if(!lastMoved)svg.setPointerCapture(e.pointerId);
+ lastMoved=true;
+ svg.classList.add('drag');
+ setView(drag.vx-dx/drag.scale,drag.vy-dy/drag.scale,view.w);
+});
+function endDrag(){drag=null;svg.classList.remove('drag');}
+svg.addEventListener('pointerup',endDrag);
+svg.addEventListener('pointercancel',endDrag);
+svg.addEventListener('click',e=>{
+ if(lastMoved){lastMoved=false;return;}
+ const target=e.target.closest('[data-index]');
+ if(target)select(Number(target.dataset.index));
+});
+svg.addEventListener('keydown',e=>{
+ const target=e.target.closest('[data-index]');
+ if(target&&(e.key==='Enter'||e.key===' ')){e.preventDefault();select(Number(target.dataset.index));return;}
+ const directions={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+ if(directions[e.key]){
+  e.preventDefault();
+  const [x,y]=directions[e.key];setView(view.x+x*view.w*.08,view.y+y*view.h*.08,view.w);
+ }else if(['+','=','-','Home'].includes(e.key)){
+  e.preventDefault();if(e.key==='Home')setView(0,0,W);else zoomBy(e.key==='-'?1/1.55:1.55);
+ }
+});
+async function renderPng(){
+ const previous={...view};
+ setView(0,0,W);
+ const copy=svg.cloneNode(true);
+ setView(previous.x,previous.y,previous.w);
+ copy.removeAttribute('tabindex');
+ for(const m of copy.querySelectorAll('.selected'))m.classList.remove('selected');
+ const blob=new Blob([new XMLSerializer().serializeToString(copy)],{type:'image/svg+xml;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ try{
+  const img=new Image();
+  img.src=url;
+  await img.decode();
+  const canvas=document.createElement('canvas');
+  canvas.width=W;canvas.height=H;
+  canvas.getContext('2d').drawImage(img,0,0,W,H);
+  return await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG')), 'image/png'));
+ }finally{URL.revokeObjectURL(url);}
+}
+$('#export').addEventListener('click',async()=>{
+ const button=$('#export'),status=$('#exportStatus');
+ button.disabled=true;status.textContent='Export en cours…';
+ try{
+  const url=URL.createObjectURL(await renderPng());
+  const a=document.createElement('a');a.href=url;a.download='Eardan-'+mode+'-2K.png';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);status.textContent='PNG prêt';
+ }catch(error){
+  status.textContent='Échec de l’export PNG';
+  console.error(error);
+ }finally{button.disabled=false;}
+});
+setMode('terrain');
+setView(0,0,W);
+
+</script></body></html>
