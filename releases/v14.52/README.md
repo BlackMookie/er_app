@@ -41,3 +41,15 @@ Le serveur crée `data/er.sqlite3` automatiquement. **Ne jamais publier ce fichi
 4. Les deux personnes utilisent des comptes différents dans une campagne partagée.
 
 **Ne pas ouvrir de redirection de port 8765 sur une box Internet.** L'application utilise HTTP pour ses tests ; utiliser un VPN privé chiffré (par exemple Tailscale) pour un test entre domiciles. Une publication sur Internet nécessite reverse proxy HTTPS, quotas, authentification renforcée, journaux et revue de sécurité.
+
+## Sauvegarde GitHub
+
+Sur la branche `backup/v14.52-client-serveur`, le dossier `releases/v14.52/archive-parts/` contient 18 fragments Base64 de l’archive complète.
+
+Pour récupérer exactement le ZIP et tous ses fichiers à partir du dépôt GitHub :
+
+```console
+python releases/v14.52/reconstruct_from_github.py
+```
+
+L’empreinte SHA-256 attendue est `3936c34f69a84325f462f59af15e6d37e3756bdefd2030ccb0235018f488e407`. La reconstruction s’arrête si l’un des fragments manque ou si le contenu a été altéré.
