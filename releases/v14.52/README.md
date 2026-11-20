@@ -52,4 +52,4 @@ Pour récupérer exactement le ZIP et tous ses fichiers à partir du dépôt Git
 python releases/v14.52/reconstruct_from_github.py
 ```
 
-L’empreinte SHA-256 attendue est `3936c34f69a84325f462f59af15e6d37e3756bdefd2030ccb0235018f488e407`. La reconstruction s’arrête si l’un des fragments manque ou si le contenu a été altéré.
+L’empreinte SHA-256 attendue est `f4713bd53eb9ea11fa43e3138d813324dd64ee07aedd6db25d228805ee3a0781`. La reconstruction s’arrête si l’un des fragments manque ou si le contenu a été altéré.
