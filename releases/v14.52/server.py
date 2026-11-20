@@ -80,11 +80,38 @@ def lookup(value, path):
     return True, cur
 
 
+def protected_state(state):
+    """Project MJ-only values regardless of how deeply an update replaces parents.
+
+    A player cannot bypass permissions by patching `grimoire` or `characters`
+    wholesale rather than targeting `pcSessionGranted` directly.
+    """
+    protected_names = {'pcSessionGranted', 'pcCreation', 'Points d’attribut totaux'}
+
+    def walk(node):
+        if isinstance(node, dict):
+            selected = {}
+            for key, value in node.items():
+                child = value if key in protected_names else (walk(value) if isinstance(value, (dict, list)) else None)
+                if key in protected_names or child is not None:
+                    selected[key] = child
+            return selected or None
+        if isinstance(node, list):
+            mapped = [walk(value) for value in node]
+            return mapped if any(value is not None for value in mapped) else None
+        return None
+
+    extras = state.get('_extras') if isinstance(state, dict) else None
+    maps = {key: value for key, value in extras.items() if 'map' in key.lower()} if isinstance(extras, dict) else {}
+    return {'PC': walk(state.get('characters', [])), 'maps': maps}
+
+
 def apply_diffs(state, updates, role):
     if not isinstance(updates, list) or len(updates) > 2000:
         raise Failure(400, 'Modifications invalides ou trop nombreuses.')
     if len(json.dumps(updates, ensure_ascii=False)) > MAX_BODY:
         raise Failure(413, 'Données trop volumineuses.')
+    before_protected = protected_state(state) if role != 'mj' else None
     for change in updates:
         if not isinstance(change, dict):
             raise Failure(400, 'Modification invalide.')
@@ -134,6 +161,8 @@ def apply_diffs(state, updates, role):
                 raise Failure(409, 'Liste modifiée par un autre utilisateur.', path=path)
         else:
             raise Failure(409, 'Conteneur incompatible.', path=path)
+    if role != 'mj' and protected_state(state) != before_protected:
+        raise Failure(403, 'Modification indirecte de champs MJ interdite (PC ou carte).')
     if not isinstance(state.get('characters'), list) or not state['characters']:
         raise Failure(400, 'La campagne doit contenir un personnage.')
     if len(json.dumps(state, ensure_ascii=False).encode('utf8')) > MAX_BODY:
