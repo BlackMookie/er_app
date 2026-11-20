@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PARTS = ROOT / 'archive-parts'
-EXPECTED_SHA256 = '3936c34f69a84325f462f59af15e6d37e3756bdefd2030ccb0235018f488e407'
+EXPECTED_SHA256 = 'f4713bd53eb9ea11fa43e3138d813324dd64ee07aedd6db25d228805ee3a0781'
 
 parts = sorted(PARTS.glob('archive-*.b64'))
 if len(parts) != 18:
